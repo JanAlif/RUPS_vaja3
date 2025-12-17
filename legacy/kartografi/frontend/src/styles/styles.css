@@ -1,0 +1,257 @@
+/* ========== Base (fixed light/dark handling) ========== */
+:root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+  
+    /* Light theme defaults */
+    color: #213547;
+    background-color: #ffffff;
+  
+    color-scheme: light;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Activate dark theme only when user prefers it */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color: rgba(255, 255, 255, 0.87);
+      background-color: #242424;
+    }
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  html, body, #root {
+    height: 100%;
+  }
+  
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    /* IMPORTANT: remove flex centering so content can be full width */
+    display: block;
+    background: var(--app-bg, #f6f8fb);
+  }
+  
+  a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: none;
+  }
+  a:hover { color: #535bf2; }
+  
+  h1 { font-size: 3.2em; line-height: 1.1; }
+  
+  button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: border-color 0.25s, background 0.2s;
+  }
+  button:hover { border-color: #646cff; }
+  button:focus,
+  button:focus-visible { outline: 4px auto -webkit-focus-ring-color; }
+  
+  /* Remove the old app.css centering constraints */
+  #root {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    text-align: initial;
+  }
+  
+  /* Optional: keep the old demo classes around (harmless) */
+  .logo { height: 6em; padding: 1.5em; transition: filter 300ms; will-change: filter; }
+  .logo:hover { filter: drop-shadow(0 0 2em #646cffaa); }
+  .logo.react:hover { filter: drop-shadow(0 0 2em #61dafbaa); }
+  @keyframes logo-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: no-preference) {
+    a:nth-of-type(2) .logo { animation: logo-spin infinite 20s linear; }
+  }
+  .card { padding: 2em; }
+  .read-the-docs { color: #888; }
+  
+  /* Leaflet small tweaks */
+  .leaflet-container { font-family: inherit; }
+  .leaflet-popup-content-wrapper { border-radius: 10px; }
+  .leaflet-control-zoom a { border-radius: 8px !important; }
+  
+  /* ========== Page styling you provided (polished) ========== */
+  
+  /* Layout: make it wider on desktop while staying comfy on smaller screens */
+  .main-wrap {
+    /* Full-width but capped; grows on large monitors */
+    width: min(95vw, 1400px);
+    margin: 32px auto;
+    padding: 0 16px;
+  }
+  
+  /* On very large displays, let it breathe more */
+  @media (min-width: 1440px) {
+    .main-wrap { width: min(94vw, 1600px); }
+  }
+  @media (min-width: 1800px) {
+    .main-wrap { width: min(92vw, 1760px); }
+  }
+  
+  .hero {
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .hero h1 {
+    margin: 0 0 8px;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.2;
+  }
+  .hero p {
+    margin: 0;
+    color: #5b6570;
+  }
+  
+  /* Card */
+  .map-card {
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #eef0f3;
+  }
+  
+  /* Toolbar */
+  .map-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 12px;
+    border-bottom: 1px solid #eef0f3;
+    background: #fafbfd;
+  }
+  .toolbar-title { font-weight: 600; }
+  .toolbar-spacer { flex: 1; }
+  .search {
+    min-width: 240px;
+    padding: 10px 12px;
+    border: 1px solid #e3e8ef;
+    border-radius: 10px;
+    outline: none;
+    background: #fff;
+  }
+  .search:focus {
+    border-color: #9db7ff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  .tool {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #e3e8ef;
+    background: #fff;
+    cursor: pointer;
+  }
+  .tool:hover {
+    border-color: #cfd7e3;
+    background: #f7f9fc;
+  }
+  
+  .map-viewport {
+    /* Use this class on the map container div instead of inline style if you prefer */
+    height: 75vh;
+  }
+  @media (min-width: 1024px) {
+    .map-viewport { height: 80vh; }
+  }
+  
+  
+  /* Optional: a full-bleed variant to make the map ultra wide */
+  .full-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
+  /* ========== Quiz Page Styles ========== */
+  .setup-container .continent-btn:hover,
+  .setup-container .mode-btn:hover {
+    border-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  }
+  
+  .setup-container .continent-btn:active,
+  .setup-container .mode-btn:active {
+    transform: translateY(0);
+  }
+
+  .quiz-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .quiz-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(31, 69, 110, 0.18);
+    background: linear-gradient(135deg, rgba(31, 69, 110, 0.08), rgba(47, 107, 79, 0.06));
+    box-shadow: 0 6px 18px rgba(31, 69, 110, 0.12);
+    color: var(--earth);
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  }
+
+  .quiz-type:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(31, 69, 110, 0.18);
+  }
+
+  .quiz-type input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--ocean);
+  }
+
+  .quiz-type span {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  .quiz-type--checked {
+    border-color: rgba(31, 69, 110, 0.55);
+    background: linear-gradient(135deg, rgba(31, 69, 110, 0.16), rgba(47, 107, 79, 0.14));
+    box-shadow: 0 12px 30px rgba(31, 69, 110, 0.22);
+  }
+
+  .quiz-type--checked span {
+    color: var(--ocean);
+  }
+
+  .quiz-type:focus-within {
+    outline: 2px solid rgba(31, 69, 110, 0.25);
+    outline-offset: 2px;
+  }
+
+  .quiz-map-embed {
+    margin-top: 16px;
+    border-radius: 14px;
+    border: 1px solid #d6dde8;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(31, 69, 110, 0.18);
+    min-height: clamp(280px, 55vh, 520px);
+  }
