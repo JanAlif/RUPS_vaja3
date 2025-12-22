@@ -27,26 +27,28 @@ export const login = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    console.log("HERE");
-    const { username, password, points } = req.body;
+    const { username, password, points, avatarPath } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ message: "username and password are required" });
     }
 
     const exists = await User.findOne({ username });
-    if (exists) {
-      return res.status(409).json({ message: "username already taken" });
-    }
+    if (exists) return res.status(409).json({ message: "username already taken" });
 
-    const user = await User.create({ username, password, points });
-    
+    const user = await User.create({
+      username,
+      password,
+      points,
+      avatarPath: avatarPath ?? null,
+    });
+
     res.cookie("userId", user._id.toString(), {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24,
       secure: false,
     });
-    
+
     return res.status(201).json(user);
   } catch (err) {
     console.error("createUser error:", err);
