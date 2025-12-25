@@ -1,0 +1,14 @@
+{
+    "name": "world-power-grid",
+    "private": true,
+    "scripts": {
+      "dev": "concurrently -n BACKEND,FRONTEND -c yellow,cyan \"npm:dev:backend\" \"npm:dev:frontend\"",
+      "dev:backend": "npm --prefix legacy/kartografi/backend run dev",
+      "dev:frontend": "npm --prefix legacy/kartografi/frontend run dev",
+  
+      "install:all": "npm --prefix legacy/kartografi/backend i && npm --prefix legacy/kartografi/frontend i"
+    },
+    "devDependencies": {
+      "concurrently": "^9.0.0"
+    }
+  }

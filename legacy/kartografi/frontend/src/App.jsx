@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import "./leaflet-icons-fix";
 import "./styles/layout.css";
 import "./styles/styles.css";
+import Elektro from "./pages/Elektro";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/sloquiz" element={<Protected> <SloQuiz/> </Protected>}/>
         <Route path="/profile" element={<Protected><Profile /></Protected>} />
         <Route path="/leaderboards" element={<Protected><LeaderBoards /></Protected>} />
+        <Route path="/elektro" element={<Protected><Elektro /></Protected>} />
       </Routes>
     </div>
   );
