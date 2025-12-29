@@ -22,4 +22,8 @@ export const api = {
   logout:   ()     => request("/api/users/logout", { method: "POST" }),
   verifySession: () => request("/api/users/me", { method: "GET" }),
   quiz:     (body) => request("/api/quiz", { method: "POST", body: JSON.stringify(body) }),
+  powerplants: (region) => {
+    const query = region ? `?region=${encodeURIComponent(region)}` : "";
+    return request(`/api/rups2/powerplants${query}`, { method: "GET" });
+  },
 };

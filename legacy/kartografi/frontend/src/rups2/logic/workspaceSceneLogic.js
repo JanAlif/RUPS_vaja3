@@ -15,6 +15,10 @@ const API_BASE = "/api/rups2";
 
 // kateri ključi v localStorage so povezani z igranjem v WorkspaceScene
 const WORKSPACE_STORAGE_KEYS = ["currentChallengeIndex"];
+const OUTSIDE_GRID_RESULT_KEY = "geoEleBuildResult";
+const INSIDE_GRID_RESULT_KEY = "geoEleInsideResult";
+export const CITY_DEMAND_MW = 300;
+const DEFAULT_WORKSPACE_KEY = "workspaceComponents";
 
 /**
  * Pobriše vse podatke o igranju za WorkspaceScene iz localStorage.
@@ -30,6 +34,7 @@ export function resetWorkspaceProgress() {
 export function initWorkspaceLogic(scene) {
   scene.graph = new CircuitGraph();
   scene.placedComponents = [];
+  scene.insidePlacedComponents = [];
   scene.gridSize = scene.gridSize || 40;
   scene.gridStartX = scene.gridStartX || 200;
   scene.gridStartY = scene.gridStartY || 0;
@@ -41,9 +46,12 @@ export function initWorkspaceLogic(scene) {
   scene.sessionPoints = 0;
 
   scene.isDraggingComponent = false;
+  scene.isExampleMode = scene.isExampleMode || false;
+  scene.workspaceStorageKey = scene.workspaceStorageKey || DEFAULT_WORKSPACE_KEY;
 
   scene.input.on("pointerdown", (pointer) => {
     if (pointer.button !== 0) return;
+    if (scene.isExampleMode) return;
     if (scene.contextMenu || scene.contextMenuJustOpened) return;
     if (scene.isDraggingComponent) return;
     if (pointer.x < (scene.panelWidth ?? 200)) return;
@@ -99,7 +107,16 @@ export function loadChallengesFromApi(scene) {
     });
 }
 
-function getComponentDetails(type) {
+function getComponentDetails(type, scene) {
+  const plant = scene?.selectedPowerplant;
+  const plantName = plant?.name || "Elektrarna";
+  const plantType = plant?.type || "unknown";
+  const plantCooling = plant?.coolingNeeds || "none";
+  const plantCapacity = plant?.capacityMW != null ? `${plant.capacityMW} MW` : "unknown";
+  const plantConstraints = Array.isArray(plant?.constraints) && plant.constraints.length
+    ? plant.constraints.join(", ")
+    : "none";
+
   const details = {
     baterija:
       "Baterija je vir napetosti\n\nNapetost: 3.3 V\n+ pol (rdeč) = pozitivni pol\n− pol (moder) = negativni pol\n\nPriklopi žico na + in − pol za sklenitev vezja",
@@ -110,6 +127,21 @@ function getComponentDetails(type) {
     zica: "Povezuje komponente\nKlikni za obračanje", // ✅
     ampermeter: "Meri električni tok\nEnota: amperi (A)",
     voltmeter: "Meri električno napetost\nEnota: volti (V)",
+    elektrarna:
+      `Elektrarna: ${plantName}\nTip: ${plantType}\nHladilne potrebe: ${plantCooling}\nKapaciteta: ${plantCapacity}\nOmejitve: ${plantConstraints}`,
+    mesto: "Mesto porablja energijo iz elektrarne\nDodaj porabnik in poveži z žico",
+    "vodna-crpalka":
+      "Vodna črpalka za hlajenje elektrarne\nLahko dodaš več črpalk",
+    transformator: "Transformator prilagodi napetost za prenos po omrežju",
+    "uranium-core":
+      "Uranovo jedro je vir energije\nNadzira se z močjo jedra",
+    "cooling-water":
+      "Hladilna voda odvaja toploto\nKoličina je omejena s črpalkami zunaj",
+    "water-tube":
+      "Vodna cev prenaša hladilno vodo skozi sistem",
+    turbine: "Turbina pretvarja energijo pare v mehansko delo",
+    generator: "Generator pretvarja mehansko energijo v elektriko",
+    "control-rod": "Krmilne palice uravnavajo reakcijo jedra",
   };
   return details[type] || "Komponenta";
 }
@@ -159,8 +191,24 @@ function normalizeType(type) {
   return type === "žica" ? "zica" : type;
 }
 
+function getDisplayName(scene, type) {
+  const plant = scene?.selectedPowerplant;
+  if (type === "elektrarna") {
+    return plant?.name ? `Elektrarna: ${plant.name}` : "Elektrarna";
+  }
+  if (type === "vodna-crpalka") return "Vodna črpalka";
+  if (type === "mesto") return "Mesto (porabnik)";
+  if (type === "uranium-core") return "Uranovo jedro";
+  if (type === "cooling-water") return "Hladilna voda";
+  if (type === "water-tube") return "Vodna cev";
+  if (type === "control-rod") return "Krmilne palice";
+  if (type === "generator") return "Generator";
+  return type;
+}
+
 function placeComponentAtPosition(scene, x, y, type, color) {
   type = normalizeType(type);
+  const displayName = getDisplayName(scene, type);
 
   const ui = getUiScale(scene.scale);
   const IMAGE_SIZE = 100 * ui;
@@ -249,10 +297,70 @@ function placeComponentAtPosition(scene, x, y, type, color) {
       componentImage = scene.add.image(0, 0, "voltmeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
+
+    case "elektrarna":
+      id = "plant_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "baterija").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "mesto":
+      id = "city_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "svetilka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "vodna-crpalka":
+      id = "pump_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "voltmeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "transformator":
+      id = "transformer_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "upor").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "uranium-core":
+      id = "uranium_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "baterija").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "cooling-water":
+      id = "cooling_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "voltmeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "water-tube":
+      id = "tube_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "zica").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "turbine":
+      id = "turbine_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "svetilka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "generator":
+      id = "generator_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "ammeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
+
+    case "control-rod":
+      id = "control_" + getRandomInt(1000, 9999);
+      componentImage = scene.add.image(0, 0, "resistor").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      newComponent.add(componentImage);
+      break;
   }
 
   const label = scene.add
-    .text(0, 40 * ui, type, {
+    .text(0, 40 * ui, displayName, {
       fontSize: `${Math.round(14 * ui)}px`,
       color: "#000",
       fontStyle: "bold",
@@ -275,6 +383,8 @@ function placeComponentAtPosition(scene, x, y, type, color) {
   newComponent.setData("wasDragged", false);
   newComponent.setData("componentImage", componentImage);
   newComponent.setData("label", label);
+  newComponent.setData("displayName", displayName);
+  if (type === "elektrarna") newComponent.setData("powerplant", scene?.selectedPowerplant || null);
   newComponent.setData("lastClickTime", 0);
   newComponent.setData("singleClickTimer", null);
 
@@ -291,6 +401,10 @@ function placeComponentAtPosition(scene, x, y, type, color) {
 
   addContextMenu(scene, newComponent, componentImage);
   scene.input.setDraggable(newComponent);
+
+  if (scene?.mode === "inside" && typeof scene.computeInsideOutput === "function") {
+    scene.computeInsideOutput();
+  }
 
   newComponent.on("dragstart", () => {
     newComponent.setData("isDragging", true);
@@ -367,6 +481,10 @@ function handleComponentMove(scene, newComponent) {
 function addContextMenu(scene, component, componentImage) {
   component.on("pointerdown", (pointer) => {
     if (pointer.rightButtonDown()) {
+      if (component.getData("type") === "elektrarna" && typeof scene.enterInsidePlantMode === "function") {
+        scene.enterInsidePlantMode();
+        return;
+      }
       if (isSwitchType(component.getData("type"))) {
         if (scene.contextMenu) {
           scene.contextMenu.destroy();
@@ -484,6 +602,9 @@ function deleteComponent(scene, component) {
 
   component.destroy();
   saveWorkspaceState(scene);
+  if (scene?.mode === "inside" && typeof scene.computeInsideOutput === "function") {
+    scene.computeInsideOutput();
+  }
 }
 
 function duplicateComponent(scene, component) {
@@ -552,6 +673,7 @@ function updateLogicNodePositions(scene, component) {
  */
 export function createComponent(scene, x, y, type, color, ui) {
   type = normalizeType(type);
+  const displayName = getDisplayName(scene, type);
 
   const component = scene.add.container(x, y);
   const IMAGE_SIZE = 100 * ui;
@@ -643,11 +765,71 @@ export function createComponent(scene, x, y, type, color, ui) {
       component.add(componentImage);
       component.setData("logicComponent", null);
       break;
+
+    case "elektrarna":
+      componentImage = scene.add.image(0, 0, "baterija").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "mesto":
+      componentImage = scene.add.image(0, 0, "svetilka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "vodna-crpalka":
+      componentImage = scene.add.image(0, 0, "voltmeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "transformator":
+      componentImage = scene.add.image(0, 0, "upor").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "uranium-core":
+      componentImage = scene.add.image(0, 0, "baterija").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "cooling-water":
+      componentImage = scene.add.image(0, 0, "voltmeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "water-tube":
+      componentImage = scene.add.image(0, 0, "zica").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "turbine":
+      componentImage = scene.add.image(0, 0, "svetilka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "generator":
+      componentImage = scene.add.image(0, 0, "ammeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
+
+    case "control-rod":
+      componentImage = scene.add.image(0, 0, "resistor").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      component.add(componentImage);
+      component.setData("logicComponent", null);
+      break;
   }
 
   component.on("pointerover", () => {
     if (component.getData("isInPanel")) {
-      const details = getComponentDetails(type);
+      const details = getComponentDetails(type, scene);
       scene.infoText.setText(details);
 
       const textBounds = scene.infoText.getBounds();
@@ -671,7 +853,7 @@ export function createComponent(scene, x, y, type, color, ui) {
   });
 
   const label = scene.add
-    .text(0, 40 * ui, type, {
+    .text(0, 40 * ui, displayName, {
       fontSize: `${14 * ui}px`,
       color: "#000",
       fontStyle: "bold",
@@ -697,6 +879,8 @@ export function createComponent(scene, x, y, type, color, ui) {
   component.setData("componentImage", componentImage);
   component.setData("lastClickTime", 0);
   component.setData("singleClickTimer", null);
+  component.setData("displayName", displayName);
+  if (type === "elektrarna") component.setData("powerplant", scene?.selectedPowerplant || null);
 
   scene.input.setDraggable(component);
 
@@ -734,6 +918,10 @@ export function createComponent(scene, x, y, type, color, ui) {
     if (isInPanel && !component.getData("isInPanel")) {
       component.destroy();
     } else if (!isInPanel && component.getData("isInPanel")) {
+      if (component.parentContainer) {
+        component.parentContainer.remove(component);
+        scene.add.existing(component);
+      }
       const snapped = snapToGrid(scene, component.x, component.y);
       component.x = snapped.x;
       component.y = snapped.y;
@@ -749,6 +937,7 @@ export function createComponent(scene, x, y, type, color, ui) {
 
       component.setData("isRotated", false);
       component.setData("isInPanel", false);
+      component.setDepth(2);
 
       // ponovno ustvarimo template v panelu
       createComponent(scene, component.getData("originalX"), component.getData("originalY"), component.getData("type"), component.getData("color"), ui);
@@ -757,6 +946,9 @@ export function createComponent(scene, x, y, type, color, ui) {
 
       addContextMenu(scene, component, componentImage);
       saveWorkspaceState(scene);
+      if (scene?.mode === "inside" && typeof scene.computeInsideOutput === "function") {
+        scene.computeInsideOutput();
+      }
     } else if (!component.getData("isInPanel")) {
       const snapped = snapToGrid(scene, component.x, component.y);
       component.x = snapped.x;
@@ -796,6 +988,12 @@ export function createComponent(scene, x, y, type, color, ui) {
       component.setData("lastClickTime", now);
     }
   });
+
+  if (scene.componentList && component.getData("isInPanel") && !component.parentContainer) {
+    scene.componentList.add(component);
+  }
+
+  return component;
 }
 
 /**
@@ -993,6 +1191,7 @@ export async function finalizeSession(scene) {
  * Save the current workspace state to localStorage
  */
 export function saveWorkspaceState(scene) {
+  const storageKey = scene?.workspaceStorageKey || DEFAULT_WORKSPACE_KEY;
   const componentsData = scene.placedComponents.map((comp) => {
     const logicComp = comp.getData("logicComponent");
     return {
@@ -1005,14 +1204,15 @@ export function saveWorkspaceState(scene) {
     };
   });
 
-  localStorage.setItem("workspaceComponents", JSON.stringify(componentsData));
+  localStorage.setItem(storageKey, JSON.stringify(componentsData));
 }
 
 /**
  * Load the workspace state from localStorage
  */
 export function loadWorkspaceState(scene) {
-  const savedData = localStorage.getItem("workspaceComponents");
+  const storageKey = scene?.workspaceStorageKey || DEFAULT_WORKSPACE_KEY;
+  const savedData = localStorage.getItem(storageKey);
   if (!savedData) return;
 
   try {
@@ -1044,13 +1244,186 @@ export function loadWorkspaceState(scene) {
 /**
  * Clear all components from the workspace
  */
-export function clearWorkspace(scene) {
+export function clearWorkspace(scene, { preserveStorage = false } = {}) {
   scene.placedComponents.forEach((comp) => comp.destroy());
   scene.placedComponents = [];
 
   scene.graph = new CircuitGraph();
 
-  localStorage.removeItem("workspaceComponents");
+  const storageKey = scene?.workspaceStorageKey || DEFAULT_WORKSPACE_KEY;
+  if (!preserveStorage) localStorage.removeItem(storageKey);
 
   if (scene.checkText) scene.checkText.setText("");
+}
+
+function getSelectedPowerplant(scene) {
+  if (scene?.selectedPowerplant) return scene.selectedPowerplant;
+  try {
+    const raw = localStorage.getItem("geoElePowerplant");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function evaluateGridRequirements(powerplant, placedTypes) {
+  const missing = [];
+  const hasPlant = placedTypes.includes("elektrarna");
+  const hasCity = placedTypes.includes("mesto");
+  const hasWire = placedTypes.includes("zica");
+  const pumpCount = placedTypes.filter((t) => t === "vodna-crpalka").length;
+  const hasTransformer = placedTypes.includes("transformator");
+
+  if (!hasPlant) missing.push("elektrarna");
+  if (!hasCity) missing.push("mesto");
+  if (!hasWire) missing.push("zica");
+
+  const coolingNeeds = powerplant?.coolingNeeds || "none";
+  const requiresCooling = ["river", "sea", "high"].includes(coolingNeeds);
+  if (requiresCooling && pumpCount < 1) missing.push("vodna-crpalka");
+
+  const capacityMW = Number(powerplant?.capacityMW || 0);
+  const constraints = Array.isArray(powerplant?.constraints) ? powerplant.constraints : [];
+  const needsTransformer =
+    capacityMW >= 800 ||
+    constraints.includes("grid_stability_priority") ||
+    constraints.includes("long_distance_grid");
+  if (needsTransformer && !hasTransformer) missing.push("transformator");
+
+  return {
+    missing,
+    hasPlant,
+    hasCity,
+    hasWire,
+    pumpCount,
+    hasTransformer,
+    requiresCooling,
+    needsTransformer,
+  };
+}
+
+function getConnectedCityInfo(scene, powerplant) {
+  const gridSize = scene.gridSize || 40;
+  const tolerance = Math.max(6, gridSize * 0.15);
+  const nodes = scene.placedComponents.map((comp, index) => ({
+    index,
+    type: normalizeType(comp.getData("type")),
+    x: comp.x,
+    y: comp.y,
+  }));
+
+  const plantIndices = nodes.filter((n) => n.type === "elektrarna").map((n) => n.index);
+  if (!plantIndices.length) {
+    return { connectedCities: 0, requiredCities: 0, capacityMatch: false };
+  }
+
+  const adj = new Map();
+  nodes.forEach((node) => adj.set(node.index, []));
+
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i];
+      const b = nodes[j];
+      const dist = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+      if (dist <= gridSize + tolerance) {
+        adj.get(a.index).push(b.index);
+        adj.get(b.index).push(a.index);
+      }
+    }
+  }
+
+  const conductive = new Set(["elektrarna", "zica", "transformator"]);
+  const connectedCities = new Set();
+  const queue = [...plantIndices];
+  const visited = new Set(queue);
+
+  while (queue.length) {
+    const idx = queue.shift();
+    const node = nodes.find((n) => n.index === idx);
+    if (!node) continue;
+
+    for (const neighborIdx of adj.get(idx) || []) {
+      if (visited.has(neighborIdx)) continue;
+      const neighbor = nodes.find((n) => n.index === neighborIdx);
+      if (!neighbor) continue;
+
+      if (neighbor.type === "mesto") {
+        connectedCities.add(neighborIdx);
+      }
+
+      if (conductive.has(neighbor.type)) {
+        visited.add(neighborIdx);
+        queue.push(neighborIdx);
+      }
+    }
+  }
+
+  const capacityMW = Number(powerplant?.capacityMW || 0);
+  const requiredCities = capacityMW > 0 ? Math.max(1, Math.round(capacityMW / CITY_DEMAND_MW)) : 0;
+  const capacityMatch = connectedCities.size * CITY_DEMAND_MW === capacityMW;
+
+  return {
+    connectedCities: connectedCities.size,
+    requiredCities,
+    capacityMatch,
+  };
+}
+
+/**
+ * Evaluate the outside grid task.
+ * Correctness is based on required elements, while points are awarded in the quiz
+ * using the quiz timer to keep scoring consistent.
+ */
+export function evaluateOutsideGrid(scene) {
+  const powerplant = getSelectedPowerplant(scene);
+  const placedTypes = scene.placedComponents.map((comp) => normalizeType(comp.getData("type")));
+
+  if (!powerplant) {
+    return {
+      correct: false,
+      message: "Ni izbrane elektrarne iz kviza.",
+      powerplant: null,
+      requirements: null,
+    };
+  }
+
+  const requirements = evaluateGridRequirements(powerplant, placedTypes);
+  const cityInfo = getConnectedCityInfo(scene, powerplant);
+  if (cityInfo.requiredCities && !cityInfo.capacityMatch) {
+    requirements.missing.push(`mesto(${cityInfo.requiredCities}x)`);
+  }
+
+  let insideResult = null;
+  try {
+    insideResult = JSON.parse(localStorage.getItem(INSIDE_GRID_RESULT_KEY) || "null");
+  } catch {
+    insideResult = null;
+  }
+
+  const capacityMW = Number(powerplant?.capacityMW || 0);
+  const insideOutput = Number(insideResult?.outputMW || 0);
+  const insideStable = Boolean(insideResult?.stable);
+  const insideMatch = insideStable && insideOutput === capacityMW;
+
+  const correct = requirements.missing.length === 0;
+
+  const message = correct
+    ? "✅ Omrežje je pravilno sestavljeno."
+    : `❌ Manjkajo komponente: ${requirements.missing.join(", ")}`;
+
+  const payload = {
+    powerplant,
+    correct,
+    requirements,
+    cityInfo,
+    insideResult: insideResult
+      ? { outputMW: insideOutput, stable: insideStable, uraniumAmount: insideResult.uraniumAmount, waterAmount: insideResult.waterAmount }
+      : null,
+    insideMatch,
+    checkedAt: Date.now(),
+  };
+
+  localStorage.setItem(OUTSIDE_GRID_RESULT_KEY, JSON.stringify(payload));
+
+  return { ...payload, message };
 }

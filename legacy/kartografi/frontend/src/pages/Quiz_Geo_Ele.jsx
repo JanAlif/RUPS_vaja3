@@ -4,6 +4,8 @@ import countriesGeo from "../assets/countries.json";
 import uniBank from "../assets/geo_uni.json";
 import bridgeBank from "../assets/geo_country_bridge.json";
 import EndGamePopUp from "../components/EndGamePopUp";
+import { loadPowerplantsForRegion } from "../lib/powerplants";
+import powerplantPlaceholder from "../rups2/components/battery.png";
 
 // --- helpers (Natural Earth) ---
 function featureIso2(f) {
@@ -26,8 +28,10 @@ const CONTINENTS = [
   { id: "Oceania", name: "Oceania", emoji: "🌏" },
 ];
 
-const TOTAL_QUESTIONS = 5;
+const TOTAL_QUESTIONS = 6;
+const SCORE_QUESTIONS = 6;
 const QUESTION_POINTS = 100;
+const OUTSIDE_GRID_RESULT_KEY = "geoEleBuildResult";
 
 // ---- TIMER (hard mode) ----
 // full points only if you answer extremely fast.
@@ -87,12 +91,14 @@ export default function Quiz_Geo_Ele() {
   // Bridge picks (for circuits)
   const [bridgeQ4, setBridgeQ4] = useState(null);
   const [bridgeQ5, setBridgeQ5] = useState(null);
+  const [powerplants, setPowerplants] = useState([]);
+  const [selectedPowerplant, setSelectedPowerplant] = useState(null);
 
   // --- timer state ---
   const [questionStartedAt, setQuestionStartedAt] = useState(null); // ms
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_LIMIT_SEC);
 
-  const maxScore = TOTAL_QUESTIONS * QUESTION_POINTS;
+  const maxScore = SCORE_QUESTIONS * QUESTION_POINTS;
 
   const availableCountries = useMemo(() => {
     const list = (countriesGeo?.features || []).filter((f) => {
@@ -106,6 +112,19 @@ export default function Quiz_Geo_Ele() {
   const bridgeQuestionsForContinent = useMemo(() => {
     const all = Array.isArray(bridgeBank) ? bridgeBank : [];
     return all.filter((q) => q?.continent === selectedContinent);
+  }, [selectedContinent]);
+
+  useEffect(() => {
+    if (!selectedContinent) return;
+    loadPowerplantsForRegion(selectedContinent)
+      .then((items) => {
+        const list = Array.isArray(items) ? items : [];
+        setPowerplants(list);
+        if (!selectedPowerplant && list.length) {
+          setSelectedPowerplant(list[Math.floor(Math.random() * list.length)]);
+        }
+      })
+      .catch(() => {});
   }, [selectedContinent]);
 
   // --- timer tick ---
@@ -142,6 +161,8 @@ export default function Quiz_Geo_Ele() {
     setUsedUniIds([]);
     setBridgeQ4(null);
     setBridgeQ5(null);
+    setPowerplants([]);
+    setSelectedPowerplant(null);
 
     // timer reset
     setQuestionStartedAt(null);
@@ -207,6 +228,7 @@ export default function Quiz_Geo_Ele() {
     setResult(null);
     setAnswer("");
     setMapSelection(null);
+    nextNumber = 6;
 
     try {
       // Q1–Q3: uni MCQ
@@ -290,6 +312,46 @@ export default function Quiz_Geo_Ele() {
         setTimeLeft(QUESTION_TIME_LIMIT_SEC);
         return;
       }
+
+      // Q6: build circuit in workspace for a specific powerplant
+      if (nextNumber === 6) {
+        const region = selectedContinent;
+        let list = powerplants;
+        if (!Array.isArray(list) || !list.length) {
+          list = await loadPowerplantsForRegion(region);
+        }
+        if (!Array.isArray(list) || !list.length) {
+          throw new Error("No powerplant data available for this region.");
+        }
+
+        const picked = selectedPowerplant || list[Math.floor(Math.random() * list.length)];
+        setSelectedPowerplant(picked);
+
+        const powerplantPayload = {
+          region,
+          name: picked.name,
+          type: picked.type,
+          coolingNeeds: picked.coolingNeeds,
+          capacityMW: picked.capacityMW,
+          constraints: picked.constraints || [],
+          meta: picked.meta || {},
+        };
+
+        localStorage.setItem("geoElePowerplant", JSON.stringify(powerplantPayload));
+
+        setQuestionNumber(nextNumber);
+        setQuestion({
+          type: "build",
+          prompt: `Q6 (Build): Zgradi električni krog za elektrarno "${picked.name}".`,
+          data: { placeholderImg: powerplantPlaceholder },
+          meta: { powerplant: powerplantPayload },
+        });
+
+        // start timer
+        setQuestionStartedAt(Date.now());
+        setTimeLeft(QUESTION_TIME_LIMIT_SEC);
+        return;
+      }
     } catch (e) {
       setQuestion(null);
       setError(e?.message || "Failed to load question.");
@@ -336,6 +398,12 @@ export default function Quiz_Geo_Ele() {
       });
 
       if (correct) setScore((prev) => prev + gained);
+      console.log("[quiz] scoring", {
+        questionType: "mcq",
+        correct,
+        elapsedSec: Math.round(elapsedSec * 10) / 10,
+        gained,
+      });
       return;
     }
 
@@ -364,6 +432,71 @@ export default function Quiz_Geo_Ele() {
       });
 
       if (correct) setScore((prev) => prev + gained);
+      console.log("[quiz] scoring", {
+        questionType: "map",
+        correct,
+        elapsedSec: Math.round(elapsedSec * 10) / 10,
+        gained,
+        target: question.target?.name,
+        selected: featureName(mapSelection),
+      });
+      return;
+    }
+
+    if (question.type === "build") {
+      let buildResult = null;
+      try {
+        buildResult = JSON.parse(localStorage.getItem(OUTSIDE_GRID_RESULT_KEY) || "null");
+      } catch {
+        buildResult = null;
+      }
+
+      if (!buildResult) {
+        setError("Oddaj omrežje v Elektro najprej (Submit).");
+        return;
+      }
+
+      const buildPlantName = buildResult?.powerplant?.name;
+      const expectedPlantName = question.meta?.powerplant?.name;
+      if (buildPlantName && expectedPlantName && buildPlantName !== expectedPlantName) {
+        setError("Oddano omrežje ni za izbrano elektrarno.");
+        return;
+      }
+
+      // Score the build using the quiz timer so points align with other questions.
+      const correct = Boolean(buildResult?.correct);
+      const capacityMatch = Boolean(buildResult?.cityInfo?.capacityMatch);
+      const insideMatch = Boolean(buildResult?.insideMatch);
+      const gained = correct && capacityMatch && insideMatch ? pointsByTime(elapsedSec) : 0;
+
+      setResult({
+        correct,
+        info: {
+          elapsedSec: Math.round(elapsedSec * 10) / 10,
+          gained,
+          powerplant: question.meta?.powerplant || null,
+          missing: buildResult?.requirements?.missing || [],
+          cityInfo: buildResult?.cityInfo || null,
+          insideResult: buildResult?.insideResult || null,
+          insideMatch,
+          capacityMatch,
+        },
+      });
+
+      if (correct) setScore((prev) => prev + gained);
+      console.log("[quiz] scoring", {
+        questionType: "build",
+        correct,
+        gained,
+        elapsedSec: Math.round(elapsedSec * 10) / 10,
+        capacityMatch,
+        insideMatch,
+        requiredCities: buildResult?.cityInfo?.requiredCities,
+        connectedCities: buildResult?.cityInfo?.connectedCities,
+        insideOutputMW: buildResult?.insideResult?.outputMW,
+        powerplantCapacityMW: question.meta?.powerplant?.capacityMW,
+        missing: buildResult?.requirements?.missing || [],
+      });
       return;
     }
   }
@@ -391,6 +524,7 @@ export default function Quiz_Geo_Ele() {
         finishedAt: Date.now(),
         circuit1: q4 ? { bridgeId: q4.id, countryIso2: q4.countryIso2, elecProfile: q4.elecProfile || null } : null,
         circuit2: q5 ? { bridgeId: q5.id, countryIso2: q5.countryIso2, elecProfile: q5.elecProfile || null } : null,
+        powerplant: selectedPowerplant || null,
       };
 
       localStorage.setItem("geoEleRun", JSON.stringify(payload));
@@ -606,10 +740,10 @@ export default function Quiz_Geo_Ele() {
                     </div>
                   )}
 
-                  {question.type === "map" && (
-                    <>
-                      <div style={{ marginTop: 10, color: "#6b7280" }}>
-                        Klikni državo: <strong>{question.target?.name}</strong>.
+                {question.type === "map" && (
+                  <>
+                    <div style={{ marginTop: 10, color: "#6b7280" }}>
+                      Klikni državo: <strong>{question.target?.name}</strong>.
                         {mapSelection ? (
                           <>
                             {" "}
@@ -638,6 +772,53 @@ export default function Quiz_Geo_Ele() {
                     </>
                   )}
 
+                  {question.type === "build" && (
+                    <>
+                      <div style={{ marginTop: 10, color: "#6b7280" }}>
+                        Izbrana elektrarna: <strong>{question.meta?.powerplant?.name}</strong> ({question.meta?.powerplant?.type})
+                      </div>
+                      <div style={{ marginTop: 8 }}>
+                        Hladilne potrebe: <strong>{question.meta?.powerplant?.coolingNeeds}</strong> · Kapaciteta:{" "}
+                        <strong>{question.meta?.powerplant?.capacityMW} MW</strong>
+                      </div>
+                      <div style={{ marginTop: 8, color: "#6b7280", fontSize: "0.95rem" }}>
+                        Omejitve:{" "}
+                        <strong>
+                          {Array.isArray(question.meta?.powerplant?.constraints) && question.meta.powerplant.constraints.length
+                            ? question.meta.powerplant.constraints.join(", ")
+                            : "none"}
+                        </strong>
+                      </div>
+                      <div style={{ marginTop: 12, display: "flex", gap: 12, alignItems: "center" }}>
+                        <img
+                          src={question.data?.placeholderImg}
+                          alt="Powerplant placeholder"
+                          style={{ width: 64, height: 64 }}
+                        />
+                        <div style={{ color: "#6b7280", fontSize: "0.95rem" }}>
+                          Odpri Elektro in sestavi krog, ki ustreza tej elektrarni. Nato se vrni in klikni Submit.
+                        </div>
+                      </div>
+                      <div style={{ marginTop: 12 }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            window.location.href = "/elektro";
+                          }}
+                          style={{
+                            padding: "10px 14px",
+                            borderRadius: 10,
+                            border: "1px solid #e5e7eb",
+                            background: "#f9fafb",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Open Workspace
+                        </button>
+                      </div>
+                    </>
+                  )}
+
                   {/* keep submit/exit visible */}
                   <div style={{ display: "flex", gap: 10, marginTop: 14, alignItems: "center" }}>
                     <button
@@ -645,7 +826,7 @@ export default function Quiz_Geo_Ele() {
                       disabled={
                         loading ||
                         Boolean(result) ||
-                        (question.type === "mcq" ? answer === "" : question.type === "map" ? !mapSelection : true)
+                        (question.type === "mcq" ? answer === "" : question.type === "map" ? !mapSelection : false)
                       }
                       style={{
                         padding: "10px 16px",
@@ -743,6 +924,42 @@ export default function Quiz_Geo_Ele() {
                         {result.info?.explanation ? (
                           <div style={{ marginTop: 8, color: "#111827" }}>
                             <strong>Explanation:</strong> {result.info.explanation}
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+
+                    {question.type === "build" && (
+                      <div style={{ marginTop: 6 }}>
+                        {result.correct ? (
+                          <>
+                            Omrežje je pravilno sestavljeno.
+                            {!result.info?.capacityMatch || !result.info?.insideMatch ? (
+                              <div style={{ marginTop: 6 }}>
+                                ⚠️ Za polne točke mora biti število mest pravilno in notranja proizvodnja enaka kapaciteti.
+                              </div>
+                            ) : null}
+                          </>
+                        ) : (
+                          <>
+                            Manjkajo:{" "}
+                            <strong>
+                              {Array.isArray(result.info?.missing) && result.info.missing.length
+                                ? result.info.missing.join(", ")
+                                : "neznano"}
+                            </strong>
+                          </>
+                        )}
+                        {result.info?.cityInfo ? (
+                          <div style={{ marginTop: 6 }}>
+                            Povezana mesta: <strong>{result.info.cityInfo.connectedCities}</strong> · potrebna:{" "}
+                            <strong>{result.info.cityInfo.requiredCities}</strong>
+                          </div>
+                        ) : null}
+                        {result.info?.insideResult ? (
+                          <div style={{ marginTop: 6 }}>
+                            Notranja proizvodnja: <strong>{result.info.insideResult.outputMW} MW</strong> · stabilnost:{" "}
+                            <strong>{result.info.insideResult.stable ? "da" : "ne"}</strong>
                           </div>
                         ) : null}
                       </div>
