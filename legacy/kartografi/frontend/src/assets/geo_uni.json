@@ -1,0 +1,367 @@
+{
+    "version": "1.0",
+    "target": "students",
+    "questions": [
+      {
+        "id": "geo_001",
+        "category": "gis",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Kaj najbolje opisuje razliko med rastrskim in vektorskim podatkovnim modelom v GIS?",
+        "choices": [
+          "Raster je primeren za diskretne objekte, vektor za zvezne pojave",
+          "Raster shranjuje vrednosti v celicah mreže, vektor opisuje geometrije (točke/linije/poligone)",
+          "Raster vedno vsebuje višinske podatke, vektor pa vedno vsebuje satelitske posnetke",
+          "Vektor je hitrejši za analize površin, raster pa za topologijo"
+        ],
+        "answerIndex": 1,
+        "explanation": "Raster = grid celic z vrednostmi; vektor = geometrije + atributi."
+      },
+      {
+        "id": "geo_002",
+        "category": "gis",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj pomeni, da je projekcija ekvivalentna (equal-area)?",
+        "choices": [
+          "Ohranja kote (lokalno obliko)",
+          "Ohranja razdalje od središča",
+          "Ohranja površine (aree) na račun drugih popačenj",
+          "Ohranja merilo povsod enako"
+        ],
+        "answerIndex": 2,
+        "explanation": "Equal-area projekcije ohranjajo površine, ne pa nujno oblik/razdalj."
+      },
+      {
+        "id": "geo_003",
+        "category": "geomorphology",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Katera kombinacija procesov je najbolj značilna za nastanek kraških jam?",
+        "choices": [
+          "Mehansko preperevanje + eolska erozija",
+          "Topljenje/raztapljanje karbonatnih kamnin + podzemno odtekanje",
+          "Glacialna akumulacija + tektonsko dvigovanje",
+          "Vulkanska aktivnost + sedimentacija"
+        ],
+        "answerIndex": 1,
+        "explanation": "Kras = raztapljanje apnenca/dolomita, podzemni tokovi oblikujejo jame."
+      },
+      {
+        "id": "geo_004",
+        "category": "climatology",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Katera trditev najbolje opiše Köppenovo klimo Csa?",
+        "choices": [
+          "Vlažna tropska klima brez sušne dobe",
+          "Sredozemska klima: suho poletje, mile vlažne zime",
+          "Kontinentalna klima z zelo mrzlimi zimami",
+          "Stepska klima z nizkimi padavinami skozi leto"
+        ],
+        "answerIndex": 1,
+        "explanation": "Csa = Mediterranean hot-summer: suha poletja, vlažne mile zime."
+      },
+      {
+        "id": "geo_005",
+        "category": "climatology",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj je adiabatsko ohlajanje zraka (v osnovi)?",
+        "choices": [
+          "Ohlajanje zraka zaradi mešanja z mrzlim zrakom",
+          "Ohlajanje zraka pri dvigu zaradi raztezanja brez izmenjave toplote z okolico",
+          "Ohlajanje zraka zaradi izhlapevanja padavin",
+          "Ohlajanje zraka zaradi radiacije ponoči"
+        ],
+        "answerIndex": 1,
+        "explanation": "Pri dvigu tlak pade, zrak se razteza in se adiabatsko ohlaja."
+      },
+      {
+        "id": "geo_006",
+        "category": "oceanography",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Kaj je glavni mehanizem, ki poganja termohalinsko cirkulacijo oceanov?",
+        "choices": [
+          "Razlike v slanosti in temperaturi, ki povzročajo razlike v gostoti",
+          "Dnevno-nočna izmenjava vetrov",
+          "Lunin vpliv, ki povzroča plimovanje",
+          "Vulkanska aktivnost na oceanskem dnu"
+        ],
+        "answerIndex": 0,
+        "explanation": "Gostota vode je odvisna od temperature in slanosti → poganja globinske tokove."
+      },
+      {
+        "id": "geo_007",
+        "category": "geology",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Katera meja plošč je najpogosteje povezana z nastankom otoških lokov (island arcs)?",
+        "choices": [
+          "Divergentna meja (srednjeoceanski hrbet)",
+          "Transformna meja (prelom)",
+          "Konvergentna meja s subdukcijo",
+          "Intrakratonsko ugrezanje"
+        ],
+        "answerIndex": 2,
+        "explanation": "Otoški loki nastajajo pri subdukciji oceanske plošče pod drugo ploščo."
+      },
+      {
+        "id": "geo_008",
+        "category": "hydrology",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Kaj je povodje (drainage basin)?",
+        "choices": [
+          "Območje, iz katerega površinske vode odtekajo v isti vodotok/iztok",
+          "Območje, kjer je podtalnica vedno nad površjem",
+          "Območje s konstantnimi padavinami skozi leto",
+          "Območje, kjer se reke nikoli ne razlivajo"
+        ],
+        "answerIndex": 0,
+        "explanation": "Povodje je topografsko določeno območje, ki napaja isti iztok/strugo."
+      },
+      {
+        "id": "geo_009",
+        "category": "human_geography",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj pomeni demografski prehod (demographic transition) v klasičnem modelu?",
+        "choices": [
+          "Prehod iz nizke rodnosti in umrljivosti v visoko rodnost in umrljivost",
+          "Prehod iz visokih stopenj rodnosti/umrljivosti v nizke, skozi več faz",
+          "Nenaden upad prebivalstva zaradi epidemij",
+          "Izseljevanje iz mesta na podeželje"
+        ],
+        "answerIndex": 1,
+        "explanation": "Model opisuje faze razvoja: padanje umrljivosti in nato rodnosti."
+      },
+      {
+        "id": "geo_010",
+        "category": "economy",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Kaj je GDP per capita (BDP na prebivalca) v interpretaciji geografije razvoja?",
+        "choices": [
+          "Število prebivalcev deljeno z BDP",
+          "BDP deljen s številom prebivalcev (indikator povprečne ekonomske produkcije na osebo)",
+          "Izključno vrednost industrije v državi",
+          "Indikator gostote poselitve"
+        ],
+        "answerIndex": 1,
+        "explanation": "BDP na prebivalca = BDP / prebivalstvo; grob indikator razvitosti."
+      },
+      {
+        "id": "geo_011",
+        "category": "remote_sensing",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj v daljinskem zaznavanju (remote sensing) pomeni 'prostorska ločljivost'?",
+        "choices": [
+          "Koliko različnih spektralnih pasov senzor meri",
+          "Kako pogosto satelit preleti isto območje",
+          "Velikost najmanjšega objekta/celice, ki jo senzor lahko zazna",
+          "Natančnost GPS koordinat na tleh"
+        ],
+        "answerIndex": 2,
+        "explanation": "Prostorska ločljivost je velikost piksla na tleh (npr. 10 m/pixel)."
+      },
+      {
+        "id": "geo_012",
+        "category": "cartography",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Zakaj Mercatorjeva projekcija popači velikost območij pri visokih zemljepisnih širinah?",
+        "choices": [
+          "Ker ohranja površine",
+          "Ker ohranja kote in zato raztegne merilo proti poloma",
+          "Ker uporablja elipsoid namesto krogle",
+          "Ker je namenjena izključno satelitskim posnetkom"
+        ],
+        "answerIndex": 1,
+        "explanation": "Mercator je konformna → raztegne merilo pri polih → Grenlandija izgleda ogromna."
+      },
+      {
+        "id": "geo_013",
+        "category": "environment",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj je glavni namen presoje vplivov na okolje (EIA) pri prostorskih posegih?",
+        "choices": [
+          "Določiti davčno stopnjo za investitorja",
+          "Oceniti vplive posega in predlagati omilitvene ukrepe pred izvedbo",
+          "Izbrati najlepšo arhitekturno rešitev",
+          "Nadomestiti gradbeno dovoljenje"
+        ],
+        "answerIndex": 1,
+        "explanation": "EIA = sistematična ocena vplivov + ukrepi za zmanjšanje negativnih učinkov."
+      },
+      {
+        "id": "geo_014",
+        "category": "geology",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Katera kamnina je tipična za karbonatni kras v Evropi?",
+        "choices": [
+          "Bazalt",
+          "Apnenec",
+          "Granit",
+          "Škrilavec"
+        ],
+        "answerIndex": 1,
+        "explanation": "Kras je najpogosteje povezan z apnencem (CaCO3) in raztapljanjem."
+      },
+      {
+        "id": "geo_015",
+        "category": "statistics",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj je korelacija (v kontekstu analize prostorskih podatkov) najbolj pravilno?",
+        "choices": [
+          "Dokaz vzročnosti",
+          "Merilo povezanosti dveh spremenljivk, ne nujno vzročno-posledično",
+          "Razlika med dvema povprečjema",
+          "Število točk na zemljevidu"
+        ],
+        "answerIndex": 1,
+        "explanation": "Korelacija meri povezanost, ne dokazuje vzročnosti."
+      },
+  
+      {
+        "id": "geo_016",
+        "category": "energy_geography",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Katera trditev je najbolj smiselna pri umeščanju vetrnih elektrarn?",
+        "choices": [
+          "Vetrne elektrarne se načeloma umešča v območja z visoko povprečno hitrostjo vetra",
+          "Vetrne elektrarne delujejo najbolje v kotlinah brez vetra",
+          "Vetrne elektrarne zahtevajo stalno vulkansko aktivnost",
+          "Vetrne elektrarne so odvisne samo od oddaljenosti od ekvatorja"
+        ],
+        "answerIndex": 0,
+        "explanation": "Osnovni kriterij je vetrovnost (poleg varstva narave, oddaljenosti od naselij, omrežja …)."
+      },
+      {
+        "id": "geo_017",
+        "category": "energy_geography",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kateri faktor je ključen pri hidroelektrarnah (poenostavljeno)?",
+        "choices": [
+          "Višinska razlika (pad) in pretok",
+          "Bližina puščave",
+          "Povprečna letna temperatura nad 30°C",
+          "Bližina tektonske meje"
+        ],
+        "answerIndex": 0,
+        "explanation": "Moč hidro = odvisna od padca in pretoka (idealizirano)."
+      },
+      {
+        "id": "geo_018",
+        "category": "human_geography",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Kaj je urbanizacija?",
+        "choices": [
+          "Povečevanje deleža prebivalstva, ki živi v mestih",
+          "Povečevanje površine oceanov",
+          "Zmanjšanje gostote poselitve v mestih",
+          "Prehod iz industrije v kmetijstvo"
+        ],
+        "answerIndex": 0,
+        "explanation": "Urbanizacija = rast mest + deleža urbanega prebivalstva."
+      },
+      {
+        "id": "geo_019",
+        "category": "gis",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj je 'buffer' analiza v GIS?",
+        "choices": [
+          "Stiskanje podatkov za hitrejše nalaganje",
+          "Ustvarjanje območja na določeni razdalji okoli objekta (npr. 500 m okoli ceste)",
+          "Spreminjanje koordinatnega sistema",
+          "Risanje izohips"
+        ],
+        "answerIndex": 1,
+        "explanation": "Buffer = pas/območje določene razdalje okoli geometrije."
+      },
+      {
+        "id": "geo_020",
+        "category": "remote_sensing",
+        "difficulty": 5,
+        "type": "single",
+        "prompt": "Kaj najbolj verjetno pomeni, da ima senzor 'visoko spektralno ločljivost'?",
+        "choices": [
+          "Ima zelo majhen pixel na tleh",
+          "Meri veliko ozkih spektralnih pasov (več informacij po valovni dolžini)",
+          "Preleti isto območje večkrat na dan",
+          "Uporablja samo črno-belo sliko"
+        ],
+        "answerIndex": 1,
+        "explanation": "Spektralna ločljivost = koliko (in kako ozkih) pasov meri senzor."
+      },
+      {
+        "id": "geo_021",
+        "category": "cartography",
+        "difficulty": 3,
+        "type": "single",
+        "prompt": "Kaj pomeni merilo 1 : 50 000?",
+        "choices": [
+          "1 cm na karti predstavlja 50 000 cm v naravi (500 m)",
+          "1 cm na karti predstavlja 50 000 m v naravi",
+          "Karta prikazuje 50 000 držav",
+          "Merilo se nanaša na ločljivost satelita"
+        ],
+        "answerIndex": 0,
+        "explanation": "1:50k → 1 cm = 50,000 cm = 500 m."
+      },
+      {
+        "id": "geo_022",
+        "category": "geology",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Katera izjava o potresih je najbolj pravilna (poenostavljeno)?",
+        "choices": [
+          "Najpogosteje nastajajo sredi plošč, daleč od mej",
+          "Najpogosteje so povezani z napetostmi in prelomi, pogosto ob mejah plošč",
+          "Nastajajo samo v puščavah",
+          "So vedno posledica vulkanskih izbruhov"
+        ],
+        "answerIndex": 1,
+        "explanation": "Večina potresov je povezana s prelomi in tektoniko, pogosto ob mejah plošč."
+      },
+      {
+        "id": "geo_023",
+        "category": "hydrology",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj pomeni '100-letna poplava' v hidrologiji?",
+        "choices": [
+          "Poplava, ki se zgodi enkrat na 100 let, vedno točno",
+          "Poplava, ki traja 100 let",
+          "Dogodek z verjetnostjo 1% v posameznem letu",
+          "Dogodek z verjetnostjo 100% v 100 letih"
+        ],
+        "answerIndex": 2,
+        "explanation": "100-letni dogodek ≈ 1% letna verjetnost (AEP)."
+      },
+      {
+        "id": "geo_024",
+        "category": "environment",
+        "difficulty": 4,
+        "type": "single",
+        "prompt": "Kaj je glavni namen 'trajnostnega razvoja' (sustainable development) v geografiji?",
+        "choices": [
+          "Maksimizacija BDP ne glede na okolje",
+          "Razvoj, ki zadovolji potrebe sedanjosti, ne da bi ogrozil prihodnje generacije",
+          "Popolna prepoved industrije",
+          "Razvoj samo v urbanih območjih"
+        ],
+        "answerIndex": 1,
+        "explanation": "Klasična definicija: potrebe sedanjosti brez ogrožanja prihodnjih generacij."
+      }
+    ]
+  }

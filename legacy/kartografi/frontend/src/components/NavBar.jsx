@@ -26,10 +26,13 @@ export default function NavBar() {
             Guess countries
           </NavLink>
           <NavLink to="/sloquiz" className={navLinkClass}>
-            Guess Slovenian cities
+           Slo cities
           </NavLink>
           <NavLink to="/leaderboards" className={navLinkClass}>
             Leaderboards
+          </NavLink>
+          <NavLink to={"/quiz_geo_ele"} className={navLinkClass}>
+            🌍⚡ Geo-Ele Quiz
           </NavLink>
 
           {/* ✅ Elektro modul (samo za prijavljene, ker je /elektro protected) */}

@@ -12,6 +12,7 @@ import "./leaflet-icons-fix";
 import "./styles/layout.css";
 import "./styles/styles.css";
 import Elektro from "./pages/Elektro";
+import QuizGeoEle from "./pages/Quiz_Geo_Ele";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/profile" element={<Protected><Profile /></Protected>} />
         <Route path="/leaderboards" element={<Protected><LeaderBoards /></Protected>} />
         <Route path="/elektro" element={<Protected><Elektro /></Protected>} />
+        <Route path="/quiz_geo_ele" element={<Protected><QuizGeoEle /></Protected>} />
       </Routes>
     </div>
   );
