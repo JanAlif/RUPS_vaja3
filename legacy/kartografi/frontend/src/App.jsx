@@ -13,6 +13,7 @@ import "./styles/layout.css";
 import "./styles/styles.css";
 import Elektro from "./pages/Elektro";
 import QuizGeoEle from "./pages/Quiz_Geo_Ele";
+import PowerplantMap from "./pages/PowerplantMap";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/leaderboards" element={<Protected><LeaderBoards /></Protected>} />
         <Route path="/elektro" element={<Protected><Elektro /></Protected>} />
         <Route path="/quiz_geo_ele" element={<Protected><QuizGeoEle /></Protected>} />
+        <Route path="/powerplantmap" element={<Protected><PowerplantMap /></Protected>} />
       </Routes>
     </div>
   );

@@ -35,6 +35,10 @@ export default function NavBar() {
             🌍⚡ Geo-Ele Quiz
           </NavLink>
 
+          <NavLink to="/powerplantmap" className={navLinkClass}>
+            Powerplant Map
+          </NavLink>
+
           {/* ✅ Elektro modul (samo za prijavljene, ker je /elektro protected) */}
           {user && (
             <NavLink to="/elektro" className={navLinkClass}>

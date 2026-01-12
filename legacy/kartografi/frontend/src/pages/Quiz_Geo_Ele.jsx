@@ -123,8 +123,13 @@ export default function Quiz_Geo_Ele() {
         if (!selectedPowerplant && list.length) {
           setSelectedPowerplant(list[Math.floor(Math.random() * list.length)]);
         }
+        if (list.length === 0) {
+          setError("No powerplant data available for this region.");
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        setError("Failed to load powerplant data.");
+      });
   }, [selectedContinent]);
 
   // --- timer tick ---
@@ -228,7 +233,6 @@ export default function Quiz_Geo_Ele() {
     setResult(null);
     setAnswer("");
     setMapSelection(null);
-    nextNumber = 6;
 
     try {
       // Q1–Q3: uni MCQ

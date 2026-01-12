@@ -8,6 +8,7 @@ import cityRoutes from "./routes/cityRoute.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
 import rups2Router from "./modules/backend/server.js";
+import powerplantRoutes from "./routes/powerplantRoutes.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/api/cities", cityRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/rups2", rups2Router);
+app.use("/api/powerplants", powerplantRoutes);
 
 // db + server
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/kartografi";

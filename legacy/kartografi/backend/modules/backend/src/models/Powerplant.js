@@ -41,6 +41,14 @@ const powerplantSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+      latitude: {
+        type: Number,
+        required: true,
+      },
+      longitude: {
+        type: Number,
+        required: true,
+      },
   },
   { timestamps: true }
 );
