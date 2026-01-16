@@ -89,7 +89,8 @@ const MapLeaflet = forwardRef(function MapLeaflet(
     if (!fetchFromBackend || !apiBase) return;
     (async () => {
       try {
-        const res = await fetch(`${apiBase}api/places`, { cache: 'no-cache' });
+        const baseUrl = apiBase.replace(/\/+$/, "");
+        const res = await fetch(`${baseUrl}/api/places`, { cache: 'no-cache' });
         if (!res.ok) return;
         const data = await res.json();
         if (Array.isArray(data) && data.length) setMarkers(data);

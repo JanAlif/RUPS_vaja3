@@ -36,7 +36,8 @@ export default function Quiz() {
   
   
   useEffect(() => {
-    fetch(`${apiBase}api/leaderboard/slo-highscore`, {
+    const baseUrl = apiBase.replace(/\/+$/, "");
+    fetch(`${baseUrl}/api/leaderboard/slo-highscore`, {
       method: "GET",
       credentials: "include", 
     })
@@ -60,7 +61,8 @@ export default function Quiz() {
   }
 
   const fetchRandomCity = useCallback(() => {
-    fetch(`${apiBase}api/cities/random`)
+    const baseUrl = apiBase.replace(/\/+$/, "");
+    fetch(`${baseUrl}/api/cities/random`)
       .then((res) => res.json())
       .then((data) => {
         if (data.city) {
@@ -101,7 +103,8 @@ export default function Quiz() {
   function handleSubmit() {
     if (!targetCity || !mapRef.current || !clickedCoords) return;
 
-    fetch(`${apiBase}api/cities/coords?name=${encodeURIComponent(targetCity)}`)
+    const baseUrl = apiBase.replace(/\/+$/, "");
+    fetch(`${baseUrl}/api/cities/coords?name=${encodeURIComponent(targetCity)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.lat && data.lng) {
@@ -145,7 +148,8 @@ export default function Quiz() {
   }
 
   function saveHighScore(finalScore) {
-    fetch(`${apiBase}api/leaderboard/submit`, {
+    const baseUrl = apiBase.replace(/\/+$/, "");
+    fetch(`${baseUrl}/api/leaderboard/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

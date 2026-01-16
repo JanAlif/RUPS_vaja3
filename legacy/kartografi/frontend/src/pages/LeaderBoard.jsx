@@ -20,7 +20,8 @@ export default function Leaderboard() {
   const fetchLeaderboard = async (type, continent) => {
     setLoading(true);
     try {
-      let url = `${apiBase}api/leaderboard?gameType=${type}`;
+      const baseUrl = apiBase.replace(/\/+$/, "");
+      let url = `${baseUrl}/api/leaderboard?gameType=${type}`;
       if (type === "countries" && continent) {
         url += `&continent=${continent}`;
       }
