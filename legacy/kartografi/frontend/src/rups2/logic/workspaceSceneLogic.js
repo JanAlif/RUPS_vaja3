@@ -17,7 +17,7 @@ const API_BASE = "/api/rups2";
 const WORKSPACE_STORAGE_KEYS = ["currentChallengeIndex"];
 const OUTSIDE_GRID_RESULT_KEY = "geoEleBuildResult";
 const INSIDE_GRID_RESULT_KEY = "geoEleInsideResult";
-export const CITY_DEMAND_MW = 300;
+export const CITY_DEMAND_MW = 500;
 const DEFAULT_WORKSPACE_KEY = "workspaceComponents";
 
 /**
@@ -300,52 +300,75 @@ function placeComponentAtPosition(scene, x, y, type, color) {
 
     case "elektrarna":
       id = "plant_" + getRandomInt(1000, 9999);
-      componentImage = scene.add.image(0, 0, "baterija").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      comp = new Battery(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0), 3.3);
+      comp.type = "battery";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "elektrarna").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
 
     case "mesto":
       id = "city_" + getRandomInt(1000, 9999);
-      componentImage = scene.add.image(0, 0, "svetilka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      comp = new Bulb(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0));
+      comp.type = "bulb";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "mesto").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
 
     case "vodna-crpalka":
       id = "pump_" + getRandomInt(1000, 9999);
-      componentImage = scene.add.image(0, 0, "voltmeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      comp = new Resistor(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0), 10);
+      comp.type = "resistor";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "vodna-crpalka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
 
     case "transformator":
       id = "transformer_" + getRandomInt(1000, 9999);
-      componentImage = scene.add.image(0, 0, "upor").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      comp = new Resistor(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0), 5);
+      comp.type = "resistor";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "transformator").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
 
     case "uranium-core":
       id = "uranium_" + getRandomInt(1000, 9999);
-      componentImage = scene.add.image(0, 0, "baterija").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      comp = new Battery(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0), 3.3);
+      comp.type = "battery";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "uranium-core").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
 
+    /*
     case "cooling-water":
       id = "cooling_" + getRandomInt(1000, 9999);
       componentImage = scene.add.image(0, 0, "voltmeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
+    */
 
     case "water-tube":
       id = "tube_" + getRandomInt(1000, 9999);
-      componentImage = scene.add.image(0, 0, "zica").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      componentImage = scene.add.image(0, 0, "water-tube").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
 
     case "turbine":
       id = "turbine_" + getRandomInt(1000, 9999);
-      componentImage = scene.add.image(0, 0, "svetilka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      componentImage = scene.add.image(0, 0, "turbine").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
 
+    /*
     case "generator":
       id = "generator_" + getRandomInt(1000, 9999);
       componentImage = scene.add.image(0, 0, "ammeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
@@ -357,6 +380,7 @@ function placeComponentAtPosition(scene, x, y, type, color) {
       componentImage = scene.add.image(0, 0, "resistor").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       newComponent.add(componentImage);
       break;
+    */
   }
 
   const label = scene.add
@@ -767,33 +791,59 @@ export function createComponent(scene, x, y, type, color, ui) {
       break;
 
     case "elektrarna":
-      componentImage = scene.add.image(0, 0, "baterija").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      id = "plant_" + getRandomInt(1000, 9999);
+      comp = new Battery(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0), 3.3);
+      comp.type = "battery";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "elektrarna").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       component.add(componentImage);
-      component.setData("logicComponent", null);
+      component.setData("logicComponent", comp);
       break;
 
     case "mesto":
-      componentImage = scene.add.image(0, 0, "svetilka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      id = "city_" + getRandomInt(1000, 9999);
+      comp = new Bulb(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0));
+      comp.type = "bulb"; // treating as consumer
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "mesto").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       component.add(componentImage);
-      component.setData("logicComponent", null);
+      component.setData("logicComponent", comp);
       break;
 
     case "vodna-crpalka":
-      componentImage = scene.add.image(0, 0, "voltmeter").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      id = "pump_" + getRandomInt(1000, 9999);
+      comp = new Resistor(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0), 10);
+      comp.type = "resistor";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "vodna-crpalka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       component.add(componentImage);
-      component.setData("logicComponent", null);
+      component.setData("logicComponent", comp);
       break;
 
     case "transformator":
-      componentImage = scene.add.image(0, 0, "upor").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      id = "transformer_" + getRandomInt(1000, 9999);
+      // Transformers usually have 2 sides, but here we treat as a simple pass-through component
+      comp = new Resistor(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0), 5);
+      comp.type = "resistor";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "transformator").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       component.add(componentImage);
-      component.setData("logicComponent", null);
+      component.setData("logicComponent", comp);
       break;
 
     case "uranium-core":
-      componentImage = scene.add.image(0, 0, "baterija").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      id = "uranium_" + getRandomInt(1000, 9999);
+      comp = new Battery(id, new Node(id + "_start", -40, 0), new Node(id + "_end", 40, 0), 3.3);
+      comp.type = "battery";
+      comp.localStart = { x: -40, y: 0 };
+      comp.localEnd = { x: 40, y: 0 };
+      componentImage = scene.add.image(0, 0, "uranium-core").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       component.add(componentImage);
-      component.setData("logicComponent", null);
+      component.setData("logicComponent", comp);
       break;
 
     case "cooling-water":
@@ -803,13 +853,13 @@ export function createComponent(scene, x, y, type, color, ui) {
       break;
 
     case "water-tube":
-      componentImage = scene.add.image(0, 0, "zica").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      componentImage = scene.add.image(0, 0, "water-tube").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       component.add(componentImage);
       component.setData("logicComponent", null);
       break;
 
     case "turbine":
-      componentImage = scene.add.image(0, 0, "svetilka").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+      componentImage = scene.add.image(0, 0, "turbine").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
       component.add(componentImage);
       component.setData("logicComponent", null);
       break;
@@ -1314,7 +1364,7 @@ function getConnectedCityInfo(scene, powerplant) {
 
   const plantIndices = nodes.filter((n) => n.type === "elektrarna").map((n) => n.index);
   if (!plantIndices.length) {
-    return { connectedCities: 0, requiredCities: 0, capacityMatch: false };
+    return { connectedCities: 0, requiredCities: 0, capacityMatch: false, connectedTransformers: 0 };
   }
 
   const adj = new Map();
@@ -1334,6 +1384,7 @@ function getConnectedCityInfo(scene, powerplant) {
 
   const conductive = new Set(["elektrarna", "zica", "transformator"]);
   const connectedCities = new Set();
+  const connectedTransformers = new Set();
   const queue = [...plantIndices];
   const visited = new Set(queue);
 
@@ -1349,6 +1400,10 @@ function getConnectedCityInfo(scene, powerplant) {
 
       if (neighbor.type === "mesto") {
         connectedCities.add(neighborIdx);
+      }
+      
+      if (neighbor.type === "transformator") {
+        connectedTransformers.add(neighborIdx);
       }
 
       if (conductive.has(neighbor.type)) {
@@ -1366,14 +1421,9 @@ function getConnectedCityInfo(scene, powerplant) {
     connectedCities: connectedCities.size,
     requiredCities,
     capacityMatch,
+    connectedTransformers: connectedTransformers.size,
   };
 }
-
-/**
- * Evaluate the outside grid task.
- * Correctness is based on required elements, while points are awarded in the quiz
- * using the quiz timer to keep scoring consistent.
- */
 export function evaluateOutsideGrid(scene) {
   const powerplant = getSelectedPowerplant(scene);
   const placedTypes = scene.placedComponents.map((comp) => normalizeType(comp.getData("type")));
@@ -1384,6 +1434,7 @@ export function evaluateOutsideGrid(scene) {
       message: "Ni izbrane elektrarne iz kviza.",
       powerplant: null,
       requirements: null,
+      score: 0
     };
   }
 
@@ -1405,10 +1456,43 @@ export function evaluateOutsideGrid(scene) {
   const insideStable = Boolean(insideResult?.stable);
   const insideMatch = insideStable && insideOutput === capacityMW;
 
+  // --- SCORE CALCULATION ---
+  let score = 0;
+
+  // 1. Power Generation (Max 70%)
+  // Logic: 90% - 110% of requirememt AND reactor must be stable
+  if (insideStable && insideOutput >= 0.9 * capacityMW && insideOutput <= 1.1 * capacityMW) {
+    score += 70;
+  }
+
+  // 2. City Consumption (Max 30%)
+  // Logic: Connected Cities demand (0.9-1.1 of produced)
+  // Each city needs ~500MW (CITY_DEMAND_MW)
+  const totalDemand = cityInfo.connectedCities * CITY_DEMAND_MW;
+  
+  // They get points if demand matches supply (which matches capacity)
+  if (totalDemand >= 0.9 * capacityMW && totalDemand <= 1.1 * capacityMW) {
+    // Initial 30 points
+    let consumptionPoints = 30;
+
+    // Deduct if transformers are missing.
+    // Logic: Each city needs a transformer.
+    // If connectedTransformers < connectedCities, deduct proportional points.
+    if (cityInfo.connectedTransformers < cityInfo.connectedCities) {
+      if (cityInfo.connectedCities > 0) {
+        const ratio = cityInfo.connectedTransformers / cityInfo.connectedCities;
+        consumptionPoints = consumptionPoints * ratio;
+      } else {
+        consumptionPoints = 0;
+      }
+    }
+    score += consumptionPoints;
+  }
+
   const correct = requirements.missing.length === 0;
 
   const message = correct
-    ? "✅ Omrežje je pravilno sestavljeno."
+    ? `✅ Omrežje je pravilno sestavljeno. Točke: ${Math.round(score)}%`
     : `❌ Manjkajo komponente: ${requirements.missing.join(", ")}`;
 
   const payload = {
@@ -1421,9 +1505,156 @@ export function evaluateOutsideGrid(scene) {
       : null,
     insideMatch,
     checkedAt: Date.now(),
+    score: Math.round(score)
   };
 
   localStorage.setItem(OUTSIDE_GRID_RESULT_KEY, JSON.stringify(payload));
 
   return { ...payload, message };
+}
+
+/**
+ * Toggle between user workspace and example mode.
+ */
+export function toggleExampleMode(scene) {
+  if (scene.isExampleMode) {
+    // 1. Switch back to workspace
+    scene.isExampleMode = false;
+    scene.workspaceStorageKey = "workspaceComponentsOutside";
+
+    // Clear example components
+    clearWorkspace(scene); // Clears current (example) components
+
+    // Restore user session components
+    if (scene.savedUserSession) {
+        // Restore Mocked Data
+        if (scene.savedUserSession.savedPowerplant) {
+            scene.selectedPowerplant = scene.savedUserSession.savedPowerplant;
+        } else {
+             scene.selectedPowerplant = null;
+        }
+        if (scene.savedUserSession.savedInsideResult) {
+            localStorage.setItem(INSIDE_GRID_RESULT_KEY, scene.savedUserSession.savedInsideResult);
+        } else {
+            localStorage.removeItem(INSIDE_GRID_RESULT_KEY);
+        }
+
+        scene.savedUserSession.components.forEach(data => {
+            placeComponentAtPosition(scene, data.x, data.y, data.type, data.color);
+            // Restore rotation and state if needed, similar to loadWorkspaceState
+             const placedComp = scene.placedComponents[scene.placedComponents.length - 1];
+            if (data.rotation && data.rotation !== 0) {
+                 const componentImage = placedComp.getData('componentImage');
+                 const rotations = data.rotation / 90;
+                 for (let i = 0; i < rotations; i++) {
+                   rotateComponent(scene, placedComp, componentImage);
+                 }
+            }
+             if (data.isOn !== null && isSwitchType(data.type)) {
+                const currentType = placedComp.getData('type');
+                const shouldBeOn = data.isOn;
+                const isOn = currentType === 'stikalo-on';
+                if (shouldBeOn !== isOn) toggleSwitchState(scene, placedComp);
+             }
+        });
+        scene.savedUserSession = null;
+    }
+     if (scene.toggleExampleBtn) {
+        scene.toggleExampleBtn.text.setText("Prikaži primer");
+    }
+
+  } else {
+    // 2. Switch to Example Mode
+    scene.isExampleMode = true;
+    scene.workspaceStorageKey = "exampleComponentsOutside";
+
+    // Save current user components
+    const currentComponents = scene.placedComponents.map(comp => {
+        const logicComp = comp.getData('logicComponent');
+        return {
+          x: comp.x,
+          y: comp.y,
+          type: comp.getData('type'),
+          color: comp.getData('color'),
+          rotation: comp.getData('rotation') || 0,
+          isOn: logicComp && logicComp.is_on !== undefined ? logicComp.is_on : null
+        };
+    });
+
+    scene.savedUserSession = {
+        components: currentComponents,
+        savedPowerplant: scene.selectedPowerplant ? { ...scene.selectedPowerplant } : null,
+        savedInsideResult: localStorage.getItem(INSIDE_GRID_RESULT_KEY)
+    };
+
+
+    // Clear workspace visually
+    clearWorkspace(scene);
+    
+    // MOCK: Set valid reactor state for 100% points (70% part)
+    // 1000MW Powerplant
+    scene.selectedPowerplant = {
+        name: "Mock 1000MW Plant",
+        type: "PWR",
+        coolingNeeds: "river",
+        capacityMW: 1000,
+        constraints: [],
+    };
+    // Simulate Inside Output to match capacity
+    localStorage.setItem(INSIDE_GRID_RESULT_KEY, JSON.stringify({
+        outputMW: 1000, 
+        stable: true,
+        uraniumAmount: 3, 
+        waterAmount: 3
+    }));
+
+    // Example: Powerplant (1000MW) connected to 2 Cities via 2 Transformers
+    // Layout: 
+    //        /-- Wire -- Trans -- Wire -- City
+    // Plant -
+    //        \-- Wire -- Trans -- Wire -- City
+
+    const ui = getUiScale(scene.scale);
+    const startX = 250 * ui;
+    const centerY = 300 * ui;
+    const stepX = 80 * ui;
+    const stepY = 80 * ui;
+    
+    // 1. Powerplant
+    placeComponentAtPosition(scene, startX, centerY, 'elektrarna', 0xffb74d);
+
+    // 2. Trunk Wire
+    placeComponentAtPosition(scene, startX + stepX, centerY, 'zica', 0x0066cc);
+
+    // 3. Junction Wire
+    placeComponentAtPosition(scene, startX + stepX*2, centerY, 'zica', 0x0066cc);
+
+    // --- Branch TOP ---
+    // Wire UP
+    placeComponentAtPosition(scene, startX + stepX*2, centerY - stepY, 'zica', 0x0066cc);
+    // Transformer
+    placeComponentAtPosition(scene, startX + stepX*3, centerY - stepY, 'transformator', 0xffcc80);
+    // Wire
+    placeComponentAtPosition(scene, startX + stepX*4, centerY - stepY, 'zica', 0x0066cc);
+    // City 1
+    placeComponentAtPosition(scene, startX + stepX*5, centerY - stepY, 'mesto', 0xff5252);
+
+    // --- Branch BOTTOM ---
+    // Wire DOWN
+    placeComponentAtPosition(scene, startX + stepX*2, centerY + stepY, 'zica', 0x0066cc);
+    // Transformer
+    placeComponentAtPosition(scene, startX + stepX*3, centerY + stepY, 'transformator', 0xffcc80);
+    // Wire
+    placeComponentAtPosition(scene, startX + stepX*4, centerY + stepY, 'zica', 0x0066cc);
+    // City 2
+    placeComponentAtPosition(scene, startX + stepX*5, centerY + stepY, 'mesto', 0xff5252);
+    
+    // Cooling Pump (Required for river cooling)
+    placeComponentAtPosition(scene, startX, centerY + stepY * 2.5, 'vodna-crpalka', 0x4fc3f7);
+
+
+    if (scene.toggleExampleBtn) {
+        scene.toggleExampleBtn.text.setText("Nazaj na delo");
+    }
+  }
 }

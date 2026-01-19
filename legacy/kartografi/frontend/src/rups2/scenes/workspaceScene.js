@@ -16,6 +16,7 @@ import {
   clearWorkspace,
   evaluateOutsideGrid,
   CITY_DEMAND_MW,
+  toggleExampleMode,
 } from "../logic/workspaceSceneLogic";
 import { loadPowerplantsForRegion } from "../../lib/powerplants";
 
@@ -56,7 +57,17 @@ export default class WorkspaceScene extends Phaser.Scene {
 
     // ✅ pomembno: key je "zica" (brez šumnikov) – mora biti enako povsod
     this.load.image("zica", asset("../components/wire.png"));
-
+    
+    // Updated assets as requested
+    this.load.image("elektrarna", asset("../components/Powerplant.png"));
+    this.load.image("mesto", asset("../components/City.png"));
+    this.load.image("vodna-crpalka", asset("../components/Water_pump.png"));
+    this.load.image("transformator", asset("../components/transformer.png"));
+    this.load.image("uranium-core", asset("../components/Uranium.png"));
+    this.load.image("water-tube", asset("../components/Pipe.png"));
+    this.load.image("turbine", asset("../components/Turbine.png"));
+    
+    // Keep placeholder keys if needed to prevent crashes, but menus will use new types
     this.load.image("ampermeter", asset("../components/ammeter.png"));
     this.load.image("voltmeter", asset("../components/voltmeter.png"));
   }
@@ -215,7 +226,8 @@ export default class WorkspaceScene extends Phaser.Scene {
         this.checkText.setText(result.message || "Oddaja ni uspela.");
       }
     });
-    makeButton(width - 140, 360 + 15 * ui, "Inside/Outside", () => this.toggleWorkspaceMode());
+
+    this.toggleExampleBtn = makeButton(width - 140, 360 + 15 * ui, "Prikaži primer", () => toggleExampleMode(this));
 
     // stranska vrstica
     const panelWidth = Math.max(160 * ui, width * 0.12);
@@ -260,24 +272,13 @@ export default class WorkspaceScene extends Phaser.Scene {
         return null;
       }
     })();
-    this.selectedPowerplant = storedPowerplant || null;
-    if (this.selectedPowerplant) {
-      this.logPowerplantRequirements("loaded-from-storage");
-    }
-    this.buildExampleCircuits();
 
     this.buildComponentMenu([
       { type: "elektrarna", color: 0xffb74d },
       { type: "mesto", color: 0xff5252 },
       { type: "vodna-crpalka", color: 0x4fc3f7 },
       { type: "transformator", color: 0xffcc80 },
-      { type: "baterija", color: 0xff6600 },
-      { type: "upor", color: 0xff6600 },
-      { type: "svetilka", color: 0xff0000 },
-      { type: "stikalo-off", color: 0x666666 },
       { type: "zica", color: 0x0066cc },
-      { type: "ampermeter", color: 0x00cc66 },
-      { type: "voltmeter", color: 0x00cc66 },
     ]);
 
     this.input.on("wheel", (pointer, _gameObjects, _dx, dy) => {
@@ -396,6 +397,7 @@ export default class WorkspaceScene extends Phaser.Scene {
     if (!region) {
       this.powerplantText.setText("Powerplant\nNo region selected yet.");
     } else if (storedPowerplant) {
+      this.selectedPowerplant = storedPowerplant;
       const constraints = Array.isArray(storedPowerplant.constraints) && storedPowerplant.constraints.length
         ? storedPowerplant.constraints.join(", ")
         : "none";
@@ -408,6 +410,8 @@ export default class WorkspaceScene extends Phaser.Scene {
         `Capacity: ${storedPowerplant.capacityMW} MW\n` +
         `Constraints: ${constraints}`
       );
+      this.logPowerplantRequirements("loaded-from-storage");
+      this.buildExampleCircuits();
     } else {
       this.powerplantText.setText(`Powerplant\nLoading for ${region}...`);
       loadPowerplantsForRegion(region)
@@ -647,12 +651,13 @@ export default class WorkspaceScene extends Phaser.Scene {
     const turbines = this.placedComponents.filter((c) => c.getData("type") === "turbine").length;
     const tubes = this.placedComponents.filter((c) => c.getData("type") === "water-tube").length;
     const hasCore = this.placedComponents.some((c) => c.getData("type") === "uranium-core");
-    const hasGenerator = this.placedComponents.some((c) => c.getData("type") === "generator");
+    // Generator removed from requirements as per user request (turbines imply generation)
+    // const hasGenerator = this.placedComponents.some((c) => c.getData("type") === "generator");
 
-    if (!hasCore || turbines === 0 || tubes === 0 || !hasGenerator) {
+    if (!hasCore || turbines === 0 || tubes === 0) {
       this.insideState.stable = false;
       this.insideState.outputMW = 0;
-      this.insideState.message = "Dodaj jedro, cevi, turbine in generator.";
+      this.insideState.message = "Dodaj jedro, cevi in turbine.";
       this.updateInsideStatsUI();
       this.saveInsideResult();
       return;
@@ -807,12 +812,10 @@ export default class WorkspaceScene extends Phaser.Scene {
       }
       return;
     }
-    if (this.isExampleMode) {
-      this.showExampleMode(false);
-    }
+
     saveWorkspaceState(this);
     this.mode = "inside";
-    this.workspaceStorageKey = "workspaceComponentsInside";
+    this.workspaceStorageKey = this.isExampleMode ? "exampleComponentsInside" : "workspaceComponentsInside";
     this.setModeLabel();
 
     const pumps = this.getOutsidePumpCount();
@@ -824,27 +827,22 @@ export default class WorkspaceScene extends Phaser.Scene {
 
     clearWorkspace(this, { preserveStorage: true });
     loadWorkspaceState(this);
+    
+    // If example and empty, maybe setup example inside? 
+    // For now we just allow empty or let user build in example mode without persisting to their real workspace.
+    
     this.computeInsideOutput();
     this.setupInsidePanel();
 
     this.buildComponentMenu([
       { type: "uranium-core", color: 0xffb74d },
-      { type: "control-rod", color: 0x90caf9 },
-      { type: "cooling-water", color: 0x4fc3f7 },
       { type: "water-tube", color: 0x81d4fa },
       { type: "turbine", color: 0xffcc80 },
-      { type: "generator", color: 0xa5d6a7 },
       { type: "zica", color: 0x0066cc },
     ]);
   }
 
   exitInsidePlantMode() {
-    if (this.mode !== "inside") return;
-    saveWorkspaceState(this);
-    this.mode = "outside";
-    this.workspaceStorageKey = "workspaceComponentsOutside";
-    this.setModeLabel();
-
     this.promptText.setText(this.outsidePromptText || "Nalagam izzive...");
     if (this.insidePanel) {
       this.insidePanel.destroy(true);
@@ -860,13 +858,7 @@ export default class WorkspaceScene extends Phaser.Scene {
       { type: "mesto", color: 0xff5252 },
       { type: "vodna-crpalka", color: 0x4fc3f7 },
       { type: "transformator", color: 0xffcc80 },
-      { type: "baterija", color: 0xff6600 },
-      { type: "upor", color: 0xff6600 },
-      { type: "svetilka", color: 0xff0000 },
-      { type: "stikalo-off", color: 0x666666 },
       { type: "zica", color: 0x0066cc },
-      { type: "ampermeter", color: 0x00cc66 },
-      { type: "voltmeter", color: 0x00cc66 },
     ]);
   }
 
