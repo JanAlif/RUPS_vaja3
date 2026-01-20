@@ -13,7 +13,7 @@ const leaderboardSchema = new mongoose.Schema({
   },
   gameType: {
     type: String,
-    enum: ['countries', 'slovenian-cities'],
+    enum: ['countries', 'slovenian-cities', 'geo-ele'],
     required: true
   },
   continent: {

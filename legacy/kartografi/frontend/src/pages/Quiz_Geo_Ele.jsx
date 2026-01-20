@@ -6,6 +6,7 @@ import bridgeBank from "../assets/geo_country_bridge.json";
 import EndGamePopUp from "../components/EndGamePopUp";
 import { loadPowerplantsForRegion } from "../lib/powerplants";
 import powerplantPlaceholder from "../rups2/components/battery.png";
+import { useAuth } from "../context/AuthContext";
 
 // --- helpers (Natural Earth) ---
 function featureIso2(f) {
@@ -65,6 +66,7 @@ function pointsByTime(elapsedSec) {
 
 export default function Quiz_Geo_Ele() {
   const mapRef = useRef(null);
+  const { user } = useAuth();
 
   // setup
   const [gameState, setGameState] = useState("setup"); // setup | playing
@@ -148,6 +150,7 @@ export default function Quiz_Geo_Ele() {
   }, [gameState, question, result, questionStartedAt]);
 
   function resetAll() {
+
     setGameState("setup");
     setSelectedContinent(null);
 
@@ -517,6 +520,36 @@ export default function Quiz_Geo_Ele() {
   }
 
   function finish() {
+    // Submit to leaderboard (best score) – mirror pattern from Quiz.jsx
+    try {
+      if (user?._id && user?.username) {
+        const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5050").replace(/\/+$/, "");
+        const finalScore = Math.round(score);
+        const percentage = maxScore > 0 ? Math.round((finalScore / maxScore) * 100) : 0;
+
+        fetch(`${baseUrl}/api/leaderboard/submit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            userId: user._id,
+            username: user.username,
+            gameType: "geo-ele",
+            continent: selectedContinent,
+            score: finalScore,
+            maxScore,
+            percentage,
+          }),
+        }).catch(() => {
+          // ignore submission errors so UX doesn't break
+        });
+      } else {
+        console.log("Not logged in, Geo→Ele score not submitted");
+      }
+    } catch {
+      // ignore
+    }
+
     try {
       const q4 = bridgeQ4;
       const q5 = bridgeQ5;

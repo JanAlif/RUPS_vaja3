@@ -106,6 +106,11 @@ export const submitScore = async (req, res) => {
       return res.status(400).json({ message: 'Continent is required for countries game' });
     }
 
+    // Geo→Ele runs are continent-based as well (Africa/Asia/…)
+    if (gameType === 'geo-ele' && !continent) {
+      return res.status(400).json({ message: 'Continent is required for geo-ele game' });
+    }
+
     // Find existing entry for this user, game type, and continent
     const query = { 
       userId, 
@@ -144,7 +149,7 @@ export const submitScore = async (req, res) => {
         userId,
         username,
         gameType,
-        continent: gameType === 'countries' ? continent : undefined,
+        continent: (gameType === 'countries' || gameType === 'geo-ele') ? continent : undefined,
         score,
         maxScore,
         percentage,

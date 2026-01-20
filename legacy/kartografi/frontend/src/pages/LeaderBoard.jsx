@@ -99,6 +99,22 @@ export default function Leaderboard() {
             Slovenian Cities
           </button>
 
+          <button
+            onClick={() => setGameType("geo-ele")}
+            style={{
+              padding: "10px 20px",
+              borderRadius: 10,
+              border: gameType === "geo-ele" ? "2px solid #2f6b4f" : "1px solid rgba(0,0,0,.12)",
+              background: gameType === "geo-ele" ? "#2f6b4f" : "#fff",
+              color: gameType === "geo-ele" ? "#fff" : "#2d2a23",
+              cursor: "pointer",
+              fontWeight: 600,
+              transition: "0.2s all",
+            }}
+          >
+            Geo-Ele Quiz
+          </button>
+
           {gameType === "countries" && (
             <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
               <label style={{ fontWeight: 600, color: "#2d2a23" }}>Continent:</label>
@@ -131,13 +147,18 @@ export default function Leaderboard() {
                 <th style={{ padding: "14px 12px", textAlign: "left" }}>Player</th>
                 <th style={{ padding: "14px 12px", textAlign: "center", width: "100px" }}>Score</th>
                 <th style={{ padding: "14px 12px", textAlign: "center", width: "100px" }}>Accuracy</th>
-                {gameType === "countries" && <th style={{ padding: "14px 12px", textAlign: "center", width: "150px" }}>Continent</th>}
+                {(gameType === "countries" || gameType === "geo-ele") && (
+                  <th style={{ padding: "14px 12px", textAlign: "center", width: "150px" }}>Continent</th>
+                )}
               </tr>
             </thead>
             <tbody>
               {leaders.length === 0 ? (
                 <tr>
-                  <td colSpan={gameType === "countries" ? 5 : 4} style={{ padding: "40px 20px", textAlign: "center", color: "#5d5b53" }}>
+                  <td
+                    colSpan={gameType === "countries" || gameType === "geo-ele" ? 5 : 4}
+                    style={{ padding: "40px 20px", textAlign: "center", color: "#5d5b53" }}
+                  >
                     No scores yet. Be the first!
                   </td>
                 </tr>
@@ -150,7 +171,9 @@ export default function Leaderboard() {
                     <td style={{ padding: "12px", color: "#2d2a23" }}>{entry.username}</td>
                     <td style={{ padding: "12px", fontWeight: 600, textAlign: "center", color: "#2f6b4f" }}>{entry.score}</td>
                     <td style={{ padding: "12px", textAlign: "center", color: "#5d5b53" }}>{entry.percentage}%</td>
-                    {gameType === "countries" && <td style={{ padding: "12px", color: "#5d5b53", textAlign: "center" }}>{entry.continent}</td>}
+                    {(gameType === "countries" || gameType === "geo-ele") && (
+                      <td style={{ padding: "12px", color: "#5d5b53", textAlign: "center" }}>{entry.continent}</td>
+                    )}
                   </tr>
                 ))
               )}
