@@ -11,34 +11,34 @@ function featureIso2(f) {
   return (f?.properties?.ISO_A2 || f?.properties?.iso_a2 || "").toUpperCase();
 }
 function featureName(f) {
-  return f?.properties?.NAME || f?.properties?.ADMIN || f?.properties?.name || "Unknown";
+  return f?.properties?.NAME || f?.properties?.ADMIN || f?.properties?.name || "Neznano";
 }
 function featureContinent(f) {
-  return f?.properties?.CONTINENT || "Unknown";
+  return f?.properties?.CONTINENT || "Neznano";
 }
 
 // Continent definitions
 const CONTINENTS = [
-  { id: "all", name: "Open World", emoji: "🌍" },
-  { id: "Africa", name: "Africa", emoji: "🌍" },
-  { id: "Asia", name: "Asia", emoji: "🌏" },
-  { id: "Europe", name: "Europe", emoji: "🇪🇺" },
-  { id: "North America", name: "North America", emoji: "🌎" },
-  { id: "South America", name: "South America", emoji: "🌎" },
-  { id: "Oceania", name: "Oceania", emoji: "🌏" }
+  { id: "all", name: "Odprti svet", emoji: "🌍" },
+  { id: "Africa", name: "Afrika", emoji: "🌍" },
+  { id: "Asia", name: "Azija", emoji: "🌏" },
+  { id: "Europe", name: "Evropa", emoji: "🇪🇺" },
+  { id: "North America", name: "Severna Amerika", emoji: "🌎" },
+  { id: "South America", name: "Južna Amerika", emoji: "🌎" },
+  { id: "Oceania", name: "Oceanija", emoji: "🌏" }
 ];
 
 const MODES = [
-  { id: "learning", name: "Learning Mode", description: "Practice without pressure" },
-  { id: "quiz", name: "Quiz Mode", description: "10 questions mixing API and map challenges" }
+  { id: "learning", name: "Način učenja", description: "Vadi brez pritiska" },
+  { id: "quiz", name: "Način kviza", description: "10 vprašanj (API + izzivi na zemljevidu)" }
 ];
 
 const QUESTION_TYPES = [
-  { id: "flag", label: "Flag" },
-  { id: "main_city", label: "Capital" },
-  { id: "country", label: "Name" },
-  { id: "language", label: "Language" },
-  { id: "map", label: "Map Selection" },
+  { id: "flag", label: "Zastava" },
+  { id: "main_city", label: "Glavno mesto" },
+  { id: "country", label: "Ime države" },
+  { id: "language", label: "Jezik" },
+  { id: "map", label: "Izbira na zemljevidu" },
 ];
 
 const TOTAL_QUIZ_QUESTIONS = 10;
@@ -152,7 +152,7 @@ export default function Quiz() {
 
     if (selectedMode === "learning") {
       if (!availableCountries.length) {
-        setQuizError("No countries available for the selected region.");
+        setQuizError("Za izbrano regijo ni na voljo držav.");
         return;
       }
       const randomIndex = Math.floor(Math.random() * availableCountries.length);
@@ -163,7 +163,7 @@ export default function Quiz() {
     }
 
     if (!activeTypes.length) {
-      setQuizError("Select at least one question type before starting the quiz.");
+      setQuizError("Pred začetkom kviza izberi vsaj eno vrsto vprašanj.");
       return;
     }
 
@@ -173,7 +173,7 @@ export default function Quiz() {
 
   async function loadQuizQuestion(nextNumber) {
     if (!activeTypes.length) {
-      setQuizError("Select at least one question type before starting the quiz.");
+      setQuizError("Pred začetkom kviza izberi vsaj eno vrsto vprašanj.");
       return;
     }
 
@@ -195,7 +195,7 @@ export default function Quiz() {
             });
 
         if (!pool.length) {
-          throw new Error("No map questions available for the selected region.");
+          throw new Error("Za izbrano regijo ni na voljo vprašanj z zemljevidom.");
         }
 
         const randomIndex = Math.floor(Math.random() * pool.length);
@@ -203,7 +203,7 @@ export default function Quiz() {
         setQuizQuestionNumber(nextNumber);
         setQuizQuestion({
           type: "map",
-          prompt: `Select ${featureName(feature)} on the map.`,
+          prompt: `Na zemljevidu izberi ${featureName(feature)}.`,
           target: {
             iso: featureIso2(feature),
             name: featureName(feature),
@@ -211,7 +211,7 @@ export default function Quiz() {
         });
         mapRef.current?.recenter?.();
       } catch (error) {
-        setQuizError(error.message || "Failed to prepare map question.");
+        setQuizError(error.message || "Priprava vprašanja z zemljevidom ni uspela.");
         setQuizQuestion(null);
       } finally {
         setQuizLoading(false);
@@ -224,7 +224,7 @@ export default function Quiz() {
       setQuizQuestionNumber(nextNumber);
       setQuizQuestion(payload);
     } catch (error) {
-      setQuizError(error.message || "Failed to fetch question.");
+      setQuizError(error.message || "Nalagam vprašanje ni uspelo.");
     } finally {
       setQuizLoading(false);
     }
@@ -236,7 +236,7 @@ export default function Quiz() {
 
     if (quizQuestion.type === "map") {
       if (!quizMapSelection) {
-        setQuizError("Select a country on the map first.");
+        setQuizError("Najprej izberi državo na zemljevidu.");
         return;
       }
 
@@ -264,7 +264,7 @@ export default function Quiz() {
     }
 
     if (!quizAnswer.trim()) {
-      setQuizError("Enter an answer before submitting.");
+      setQuizError("Pred oddajo vpiši odgovor.");
       return;
     }
 
@@ -277,7 +277,7 @@ export default function Quiz() {
         setScore(prev => prev + QUESTION_POINTS);
       }
     } catch (error) {
-      setQuizError(error.message || "Failed to check your answer.");
+      setQuizError(error.message || "Preverjanje odgovora ni uspelo.");
     } finally {
       setQuizLoading(false);
     }
@@ -424,7 +424,7 @@ export default function Quiz() {
         <div className="quiz-flag" style={{ margin: "16px 0" }}>
           <img
             src={quizQuestion.data?.flagUrl}
-            alt={quizQuestion.data?.flagAlt || "Quiz flag"}
+            alt={quizQuestion.data?.flagAlt || "Zastava kviza"}
             style={{ maxWidth: "240px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
           />
         </div>
@@ -435,11 +435,11 @@ export default function Quiz() {
       return (
         <div className="quiz-extra" style={{ marginTop: 12, color: "#4b5563" }}>
           <p style={{ margin: 0 }}>
-            Click on the map below to select <strong>{quizQuestion.target?.name}</strong>.
+            Klikni na zemljevid spodaj in izberi <strong>{quizQuestion.target?.name}</strong>.
           </p>
           {quizMapSelection && (
             <p style={{ margin: "4px 0 0", fontSize: "0.95rem" }}>
-              Selected: {featureName(quizMapSelection)}
+              Izbrano: {featureName(quizMapSelection)}
             </p>
           )}
         </div>
@@ -451,13 +451,13 @@ export default function Quiz() {
         <div className="quiz-extra" style={{ marginTop: 12, color: "#4b5563" }}>
           {quizQuestion.data?.languageCount != null && (
             <span>
-              {quizQuestion.data.languageCount} official language
-              {quizQuestion.data.languageCount === 1 ? "" : "s"} to choose from.
+              Na voljo je {quizQuestion.data.languageCount} uradni
+              {quizQuestion.data.languageCount === 1 ? " jezik" : "h jezikov"}.
             </span>
           )}
           {quizQuestion.data?.languageCount > 1 && (
             <span style={{ display: "block", fontSize: "0.9rem" }}>
-              Any of them is counted as correct.
+              Kot pravilen se šteje katerikoli izmed njih.
             </span>
           )}
         </div>
@@ -467,10 +467,10 @@ export default function Quiz() {
     if (quizQuestion.type === "country" && quizQuestion.data?.language) {
       return (
         <div className="quiz-extra" style={{ marginTop: 12, color: "#4b5563" }}>
-          <span>Find a country where <strong>{quizQuestion.data.language}</strong> is official.</span>
+          <span>Najdi državo, kjer je <strong>{quizQuestion.data.language}</strong> uraden jezik.</span>
           {quizQuestion.data?.possibleAnswers > 1 && (
             <span style={{ display: "block", fontSize: "0.9rem" }}>
-              There are {quizQuestion.data?.possibleAnswers} valid answers.
+              Veljavnih odgovorov je {quizQuestion.data?.possibleAnswers}.
             </span>
           )}
         </div>
@@ -485,11 +485,11 @@ export default function Quiz() {
 
     if (quizResult.type === "country") {
       if (quizResult.correct) {
-        return <p>Accepted country: {quizResult.info?.matched}</p>;
+        return <p>Sprejeta država: {quizResult.info?.matched}</p>;
       }
       return (
         <div>
-          <p>No match. Some correct answers:</p>
+          <p>Ni zadetka. Nekaj pravilnih odgovorov:</p>
           <ul>
             {(quizResult.info?.acceptableAnswers || []).map(item => (
               <li key={item}>{item}</li>
@@ -503,8 +503,9 @@ export default function Quiz() {
       const capitals = quizResult.info?.capitals || [];
       return (
         <p>
-          {quizResult.correct ? "Correct!" : "Not quite."} {quizResult.info?.country ? `${quizResult.info.country}'s` : "The"} capital
-          {capitals.length !== 1 ? "s are" : " is"} {capitals.join(", ")}
+          {quizResult.correct ? "Pravilno!" : "Skoraj."} Glavno mesto države{" "}
+          {quizResult.info?.country ? ` ${quizResult.info.country}` : ""}{" "}
+          {capitals.length !== 1 ? "so" : "je"} {capitals.join(", ")}
         </p>
       );
     }
@@ -513,8 +514,8 @@ export default function Quiz() {
       const languages = quizResult.info?.languages || [];
       return (
         <div>
-          <p>{quizResult.correct ? "Great job!" : "Close."}</p>
-          {languages.length > 0 && <p>Official languages: {languages.join(", ")}</p>}
+          <p>{quizResult.correct ? "Odlično!" : "Skoraj."}</p>
+          {languages.length > 0 && <p>Uradni jeziki: {languages.join(", ")}</p>}
         </div>
       );
     }
@@ -522,7 +523,8 @@ export default function Quiz() {
     if (quizResult.type === "flag") {
       return (
         <p>
-          {quizResult.correct ? "Correct!" : "That flag belongs to"} {quizResult.info?.country || "the country in question"}.
+          {quizResult.correct ? "Pravilno!" : "Ta zastava pripada državi"}{" "}
+          {quizResult.info?.country || "vprašane države"}.
         </p>
       );
     }
@@ -531,8 +533,8 @@ export default function Quiz() {
       return (
         <p>
           {quizResult.correct
-            ? "Great job! You picked the right country."
-            : `You selected ${quizResult.info?.selected || "the wrong country"}. The correct answer is ${quizResult.info?.target}.`}
+            ? "Odlično! Izbral/a si pravo državo."
+            : `Izbral/a si ${quizResult.info?.selected || "napačno državo"}. Pravilen odgovor je ${quizResult.info?.target}.`}
         </p>
       );
     }
@@ -559,15 +561,15 @@ export default function Quiz() {
           }}
         >
           <h1 style={{ fontSize: "2.5rem", marginBottom: "24px", textAlign: "center" }}>
-            🌍 Country Quiz
+            🌍 Kviz držav
           </h1>
           <p style={{ marginBottom: "32px", color: "#6b7280" }}>
-            Choose a region and mode. Quiz mode pulls 10 questions from the REST Countries API with topics you select.
+            Izberi regijo in način. Način kviza pripravi 10 vprašanj iz REST Countries API glede na izbrane teme.
           </p>
 
           {!selectedContinent && (
             <div style={{ width: "100%" }}>
-              <h2 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Choose a Region:</h2>
+              <h2 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Izberi regijo:</h2>
               <div
                 style={{
                   display: "grid",
@@ -616,9 +618,9 @@ export default function Quiz() {
                   cursor: "pointer"
                 }}
               >
-                ← Back
+                ← Nazaj
               </button>
-              <h2 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Choose a Mode:</h2>
+              <h2 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Izberi način:</h2>
               <div
                 style={{
                   display: "grid",
@@ -667,7 +669,7 @@ export default function Quiz() {
                     cursor: "pointer"
                   }}
                 >
-                  ← Back
+                  ← Nazaj
                 </button>
                 <button
                   onClick={() => setSelectedContinent(null)}
@@ -679,13 +681,13 @@ export default function Quiz() {
                     cursor: "pointer"
                   }}
                 >
-                  Change Region
+                  Zamenjaj regijo
                 </button>
               </div>
 
               {selectedMode === "quiz" && (
                 <div style={{ marginBottom: "24px" }}>
-                  <h3 style={{ marginBottom: "12px" }}>Select question topics:</h3>
+                  <h3 style={{ marginBottom: "12px" }}>Izberi teme vprašanj:</h3>
                   <div className="quiz-types">
                     {QUESTION_TYPES.map(({ id, label }) => (
                       <label
@@ -702,7 +704,7 @@ export default function Quiz() {
                     ))}
                   </div>
                   <p style={{ marginTop: "12px", fontSize: "0.9rem", color: "#6b7280" }}>
-                    You can combine multiple types to mix questions. The quiz will pull 10 questions in total.
+                    Kombiniraš lahko več tipov vprašanj. Kviz bo imel skupaj 10 vprašanj.
                   </p>
                 </div>
               )}
@@ -725,7 +727,7 @@ export default function Quiz() {
                   fontWeight: 600
                 }}
               >
-                Start {selectedMode === "quiz" ? "Quiz" : "Learning"}
+                Začni {selectedMode === "quiz" ? "kviz" : "učenje"}
               </button>
             </div>
           )}
@@ -750,13 +752,13 @@ export default function Quiz() {
             borderTopRightRadius: "12px"
           }}>
             <div>
-              <h1 style={{ margin: 0 }}>Geography Quiz</h1>
-              <p style={{ margin: 0, color: "#6b7280" }}>Answer {TOTAL_QUIZ_QUESTIONS} questions mixing map picks and typed responses.</p>
+              <h1 style={{ margin: 0 }}>Geografski kviz</h1>
+              <p style={{ margin: 0, color: "#6b7280" }}>Odgovori na {TOTAL_QUIZ_QUESTIONS} vprašanj (zemljevid + tipkani odgovori).</p>
             </div>
             <div className="quiz-meta" style={{ textAlign: "right" }}>
-              <div>Score: <strong>{score}</strong></div>
-              <div>Correct: {quizCorrectCount}/{TOTAL_QUIZ_QUESTIONS}</div>
-              <div>Question: {quizProgressLabel}</div>
+              <div>Rezultat: <strong>{score}</strong></div>
+              <div>Pravilno: {quizCorrectCount}/{TOTAL_QUIZ_QUESTIONS}</div>
+              <div>Vprašanje: {quizProgressLabel}</div>
             </div>
           </header>
 
@@ -784,7 +786,7 @@ export default function Quiz() {
                       value={quizAnswer}
                       disabled={quizLoading || Boolean(quizResult)}
                       onChange={e => setQuizAnswer(e.target.value)}
-                      placeholder="Type your answer…"
+                      placeholder="Vpiši odgovor ..."
                       style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #d1d5db" }}
                     />
                   )}
@@ -813,10 +815,10 @@ export default function Quiz() {
                     }}
                   >
                     {quizLoading
-                      ? "Checking…"
+                      ? "Preverjam ..."
                       : quizQuestion.type === "map"
-                        ? "Submit Selection"
-                        : "Submit"}
+                        ? "Oddaj izbiro"
+                        : "Oddaj"}
                   </button>
                 </form>
 
@@ -844,7 +846,7 @@ export default function Quiz() {
                     }}
                   >
                     <h3 style={{ marginTop: 0 }}>
-                      {quizResult.correct ? "✅ Correct!" : "❌ Incorrect."}
+                      {quizResult.correct ? "✅ Pravilno!" : "❌ Napačno."}
                     </h3>
                     {renderQuizResultDetails()}
                     <button
@@ -861,13 +863,13 @@ export default function Quiz() {
                         cursor: quizLoading ? "not-allowed" : "pointer"
                       }}
                     >
-                      {quizQuestionNumber >= TOTAL_QUIZ_QUESTIONS ? "Finish Quiz" : "Next Question"}
+                      {quizQuestionNumber >= TOTAL_QUIZ_QUESTIONS ? "Zaključi kviz" : "Naslednje vprašanje"}
                     </button>
                   </div>
                 )}
               </>
             ) : (
-              <p>{quizLoading ? "Loading question…" : "No question available."}</p>
+              <p>{quizLoading ? "Nalagam vprašanje ..." : "Vprašanje ni na voljo."}</p>
             )}
           </section>
 
@@ -881,10 +883,10 @@ export default function Quiz() {
             justifyContent: "space-between"
           }}>
             <button className="tool" onClick={resetGame} style={{ padding: "10px 16px" }}>
-              Cancel Quiz
+              Prekliči kviz
             </button>
             <div style={{ fontSize: "0.95rem", color: "#6b7280" }}>
-              Text prompts expect country names; map prompts require selecting the country on the map. Language questions may have multiple valid answers.
+              Pri tekstovnih vprašanjih vpiši ime države; pri zemljevidu izberi državo. Vprašanja o jeziku imajo lahko več veljavnih odgovorov.
             </div>
           </footer>
         </div>
@@ -916,13 +918,13 @@ export default function Quiz() {
       <div className="map-card">
         <div className="map-toolbar" style={{ borderBottom: "1px solid #eef0f3" }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span className="toolbar-title">Find this country:</span>
+            <span className="toolbar-title">Najdi državo:</span>
             <span style={{ fontWeight: 700, fontSize: "1.2rem" }}>{targetName}</span>
           </div>
           <div className="toolbar-spacer" />
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ fontSize: "1.1rem" }}>
-              Score: <strong>{Math.round(score)}</strong>
+              Rezultat: <strong>{Math.round(score)}</strong>
             </div>
             {selectedCountry && !feedback && (
               <button
@@ -935,12 +937,12 @@ export default function Quiz() {
                   padding: "8px 20px"
                 }}
               >
-                ✓ Guess
+                ✓ Ugibaj
               </button>
             )}
           </div>
-          <button className="tool" onClick={() => mapRef.current?.recenter()}>Recenter</button>
-          <button className="tool" onClick={resetGame}>Exit</button>
+          <button className="tool" onClick={() => mapRef.current?.recenter()}>Ponastavi pogled</button>
+          <button className="tool" onClick={resetGame}>Izhod</button>
         </div>
 
         {feedback && (
@@ -955,8 +957,8 @@ export default function Quiz() {
             }}
           >
             {feedback === "correct"
-              ? `✅ Correct! You clicked ${clickedCountryName}`
-              : `❌ Wrong! You clicked ${clickedCountryName}, but the answer was ${targetName}`}
+              ? `✅ Pravilno! Kliknil/a si ${clickedCountryName}`
+              : `❌ Napačno! Kliknil/a si ${clickedCountryName}, pravilen odgovor pa je ${targetName}`}
           </div>
         )}
 
@@ -969,7 +971,7 @@ export default function Quiz() {
               fontSize: "0.95rem"
             }}
           >
-            Country selected - Press "Guess" to confirm
+            Država izbrana – za potrditev klikni »Ugibaj«
           </div>
         )}
 

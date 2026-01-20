@@ -72,7 +72,7 @@ export default function Quiz() {
           setFeedback("");
         }
       })
-      .catch((err) => console.error("Error fetching city:", err));
+      .catch((err) => console.error("Napaka pri pridobivanju mesta:", err));
   }, [apiBase]);
 
   useEffect(() => {
@@ -132,13 +132,13 @@ export default function Quiz() {
             data.lng
           );
 
-          setFeedback(`Distance from correct location: ${distanceKm.toFixed(2)} km`);
+          setFeedback(`Razdalja od pravilne lokacije: ${distanceKm.toFixed(2)} km`);
 
           const points = calculateScore(distanceKm);
           setScore((s) => s + points);
         }
       })
-      .catch((err) => console.error("Error fetching coordinates:", err));
+      .catch((err) => console.error("Napaka pri pridobivanju koordinat:", err));
 
     const next_round_button = document.getElementById("next_round");
     if (next_round_button) next_round_button.disabled = false;
@@ -170,7 +170,7 @@ export default function Quiz() {
           console.log("No new high score.");
         }
       })
-      .catch((err) => console.error("Error updating high score:", err));
+      .catch((err) => console.error("Napaka pri posodabljanju najboljšega rezultata:", err));
   }
 
   function handleNextRound() {
@@ -209,10 +209,10 @@ export default function Quiz() {
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span className="toolbar-title">
-              Round {round} / {MAX_ROUNDS}
+              Krog {round} / {MAX_ROUNDS}
             </span>
             <span style={{ fontWeight: 700 }}>
-              Find this city: {targetCity || "Loading..."}
+              Najdi to mesto: {targetCity || "Nalagam ..."}
               {clickedCoords && (
                 <span
                   style={{
@@ -243,17 +243,17 @@ export default function Quiz() {
           </div>
           <div className="toolbar-spacer" />
           <div>
-            Score: <strong>{score}</strong> | 🏆 High Score:{" "}
+            Rezultat: <strong>{score}</strong> | 🏆 Najboljši rezultat:{" "}
             <strong>{highScore}</strong> {/* ✅ show live high score */}
           </div>
           <button className="tool" onClick={() => mapRef.current?.recenter()}>
-            Recenter
+            Ponastavi pogled
           </button>
           <button id="submit_round" className="tool" onClick={handleSubmit}>
-            Submit
+            Oddaj
           </button>
           <button id="next_round" className="tool" onClick={handleNextRound}>
-            {round >= MAX_ROUNDS ? "Finish Game" : "Next Round"}
+            {round >= MAX_ROUNDS ? "Zaključi igro" : "Naslednji krog"}
           </button>
         </div>
 

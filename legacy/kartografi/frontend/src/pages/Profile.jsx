@@ -38,9 +38,9 @@ export default function Profile() {
   // helper za lepše label-e (optional)
 function formatStatLabel(key) {
   const map = {
-    points: "Points",
-    quiz_points: "Quiz points",
-    slo_points: "SLO points",
+    points: "Točke",
+    quiz_points: "Točke kviza",
+    slo_points: "SLO točke",
     // dodaj po potrebi
   };
   return map[key] ?? key.replaceAll("_", " ");
@@ -81,7 +81,7 @@ const kartografiNumericStats = useMemo(() => {
         setElektroProfile(e);
       } catch (e) {
         console.error(e);
-        setError("Could not load profile.");
+        setError("Profila ni bilo mogoče naložiti.");
       } finally {
         setLoading(false);
       }
@@ -91,7 +91,7 @@ const kartografiNumericStats = useMemo(() => {
   // ---------- actions ----------
   async function saveUsername(e) {
     e.preventDefault();
-    if (!username?.trim()) return setError("Username cannot be empty.");
+    if (!username?.trim()) return setError("Uporabniško ime ne sme biti prazno.");
 
     try {
       setSavingName(true);
@@ -134,7 +134,7 @@ const kartografiNumericStats = useMemo(() => {
       }
     } catch (e) {
       console.error(e);
-      setError(e.message || "Failed to update username.");
+      setError(e.message || "Posodobitev uporabniškega imena ni uspela.");
     } finally {
       setSavingName(false);
     }
@@ -142,9 +142,9 @@ const kartografiNumericStats = useMemo(() => {
 
   async function changePassword(e) {
     e.preventDefault();
-    if (!pwCurrent || !pwNew) return setError("Fill out all password fields.");
-    if (pwNew.length < 6) return setError("New password must be at least 6 characters.");
-    if (pwNew !== pwConfirm) return setError("New passwords do not match.");
+    if (!pwCurrent || !pwNew) return setError("Izpolni vsa polja za geslo.");
+    if (pwNew.length < 6) return setError("Novo geslo mora imeti vsaj 6 znakov.");
+    if (pwNew !== pwConfirm) return setError("Novi gesli se ne ujemata.");
 
     try {
       setChangingPw(true);
@@ -178,13 +178,13 @@ const kartografiNumericStats = useMemo(() => {
       setPwCurrent("");
       setPwNew("");
       setPwConfirm("");
-      alert("Password updated.");
+      alert("Geslo je posodobljeno.");
     } catch (e) {
       console.error(e);
       setError(
         e.message?.includes("HTTP 404")
-          ? "Password route is missing on Kartografi backend (/api/users/:id/password)."
-          : (e.message || "Failed to change password.")
+          ? "Pot za spremembo gesla manjka na Kartografi backendu (/api/users/:id/password)."
+          : (e.message || "Menjava gesla ni uspela.")
       );
     } finally {
       setChangingPw(false);
@@ -192,7 +192,7 @@ const kartografiNumericStats = useMemo(() => {
   }
 
   async function deleteAccount() {
-    if (!confirm("Delete your account? This cannot be undone.")) return;
+    if (!confirm("Želiš izbrisati račun? Tega ni mogoče razveljaviti.")) return;
 
     try {
       setDeleting(true);
@@ -215,8 +215,8 @@ const kartografiNumericStats = useMemo(() => {
       console.error(e);
       setError(
         e.message?.includes("HTTP 404")
-          ? "Delete route is missing on Kartografi backend (DELETE /api/users/:id)."
-          : (e.message || "Failed to delete account.")
+          ? "Pot za brisanje manjka na Kartografi backendu (DELETE /api/users/:id)."
+          : (e.message || "Brisanje računa ni uspelo.")
       );
     } finally {
       setDeleting(false);
@@ -254,7 +254,7 @@ const kartografiNumericStats = useMemo(() => {
       }
     } catch (e) {
       console.error(e);
-      setError(e.message || "Failed to update avatar.");
+      setError(e.message || "Posodobitev avatarja ni uspela.");
     } finally {
       setSavingAvatar(false);
     }
@@ -265,7 +265,7 @@ const kartografiNumericStats = useMemo(() => {
     return (
       <div className="main-wrap">
         <div className="map-card" style={{ padding: 16 }}>
-          <p>You’re not logged in.</p>
+          <p>Nisi prijavljen/a.</p>
         </div>
       </div>
     );
@@ -279,10 +279,10 @@ const kartografiNumericStats = useMemo(() => {
     <div className="main-wrap">
       <div className="map-card">
         <div className="map-toolbar">
-          <span className="toolbar-title">Your profile</span>
+          <span className="toolbar-title">Tvoj profil</span>
           <div className="toolbar-spacer" />
           <div style={{ opacity: 0.8 }}>
-            Joined:{" "}
+            Pridružil/a se:{" "}
             {kartografiProfile?.createdAt
               ? new Date(kartografiProfile.createdAt).toLocaleDateString()
               : "—"}
@@ -303,30 +303,30 @@ const kartografiNumericStats = useMemo(() => {
         )}
 
         {loading ? (
-          <div style={{ padding: 16 }}>Loading…</div>
+          <div style={{ padding: 16 }}>Nalagam ...</div>
         ) : (
           // ✅ IMPORTANT: scroll wrapper (da vidiš password + delete)
           <div style={{ maxHeight: "calc(100vh - 160px)", overflowY: "auto" }}>
             {/* Overview */}
             <section style={{ padding: 16, borderBottom: "1px solid #eef0f3", background: "#fff" }}>
-              <h3 style={{ margin: "0 0 8px" }}>Overview</h3>
+              <h3 style={{ margin: "0 0 8px" }}>Pregled</h3>
               <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", rowGap: 8, columnGap: 12 }}>
-                <div style={{ color: "#64748b" }}>User ID</div>
+                <div style={{ color: "#64748b" }}>ID uporabnika</div>
                 <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{user._id}</div>
 
-                <div style={{ color: "#64748b" }}>Username</div>
+                <div style={{ color: "#64748b" }}>Uporabniško ime</div>
                 <div>{kartografiProfile?.username ?? user.username}</div>
               </div>
             </section>
 
             {/* Kartografi stats (auto-detect numeric fields) */}
             <section style={{ padding: 16, borderBottom: "1px solid #eef0f3", background: "#fbfcfe" }}>
-              <h3 style={{ margin: "0 0 10px" }}>Kartografi stats</h3>
+              <h3 style={{ margin: "0 0 10px" }}>Kartografi statistika</h3>
 
               {kartografiNumericStats.length === 0 ? (
-                <div style={{ color: "#64748b" }}>{formatStatLabel(key)}
+                <div style={{ color: "#64748b" }}>
                   Kartografi backend trenutno ne vrača nobenih številčnih statistik za uporabnika.
-                  (Če želiš points/score tukaj, mora `/api/users/:id` vračat ta polja.)
+                  (Če želiš točke/rezultat tukaj, mora `/api/users/:id` vračati ta polja.)
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", rowGap: 8, columnGap: 12 }}>
@@ -344,19 +344,19 @@ const kartografiNumericStats = useMemo(() => {
 
             {/* Elektro stats */}
             <section style={{ padding: 16, borderBottom: "1px solid #eef0f3", background: "#fff" }}>
-              <h3 style={{ margin: "0 0 10px" }}>Elektro stats</h3>
+              <h3 style={{ margin: "0 0 10px" }}>Elektro statistika</h3>
               <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", rowGap: 8, columnGap: 12 }}>
-                <div style={{ color: "#64748b" }}>Last session</div>
+                <div style={{ color: "#64748b" }}>Zadnja seja</div>
                 <div>
                   <strong>{elektroPoints}</strong>
                 </div>
 
-                <div style={{ color: "#64748b" }}>Total points</div>
+                <div style={{ color: "#64748b" }}>Skupaj točk</div>
                 <div>
                   <strong>{elektroTotal}</strong>
                 </div>
 
-                <div style={{ color: "#64748b" }}>High score</div>
+                <div style={{ color: "#64748b" }}>Najboljši rezultat</div>
                 <div>
                   <strong>{elektroHigh}</strong>
                 </div>
@@ -365,7 +365,7 @@ const kartografiNumericStats = useMemo(() => {
 
             {/* Avatar picker */}
             <section style={{ padding: 16, borderBottom: "1px solid #eef0f3", background: "#fbfcfe" }}>
-              <h3 style={{ margin: "0 0 10px" }}>Choose avatar</h3>
+              <h3 style={{ margin: "0 0 10px" }}>Izberi avatar</h3>
 
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                 <div
@@ -388,8 +388,8 @@ const kartografiNumericStats = useMemo(() => {
                   />
                 </div>
                 <div style={{ opacity: 0.85 }}>
-                  Selected: <strong>{selectedAvatarKey}</strong>
-                  {savingAvatar && <span style={{ marginLeft: 8 }}>Saving…</span>}
+                  Izbrano: <strong>{selectedAvatarKey}</strong>
+                  {savingAvatar && <span style={{ marginLeft: 8 }}>Shranjujem ...</span>}
                 </div>
               </div>
 
@@ -430,50 +430,50 @@ const kartografiNumericStats = useMemo(() => {
 
             {/* Update username */}
             <section style={{ padding: 16, borderBottom: "1px solid #eef0f3", background: "#fff" }}>
-              <h3 style={{ margin: "0 0 10px" }}>Change username</h3>
+              <h3 style={{ margin: "0 0 10px" }}>Spremeni uporabniško ime</h3>
               <form onSubmit={saveUsername} style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <input
                   className="search"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="New username"
+                  placeholder="Novo uporabniško ime"
                   style={{ flex: 1, maxWidth: 360 }}
                 />
                 <button className="tool" disabled={savingName}>
-                  {savingName ? "Saving…" : "Save"}
+                  {savingName ? "Shranjujem ..." : "Shrani"}
                 </button>
               </form>
-              <p className="muted" style={{ marginTop: 8 }}>3–50 characters, unique.</p>
+              <p className="muted" style={{ marginTop: 8 }}>3–50 znakov, unikatno.</p>
             </section>
 
             {/* Change password */}
             <section style={{ padding: 16, borderBottom: "1px solid #eef0f3", background: "#fbfcfe" }}>
-              <h3 style={{ margin: "0 0 10px" }}>Change password</h3>
+              <h3 style={{ margin: "0 0 10px" }}>Spremeni geslo</h3>
               <form onSubmit={changePassword} style={{ display: "grid", gap: 8, maxWidth: 420 }}>
                 <input
                   className="search"
                   type="password"
                   value={pwCurrent}
                   onChange={(e) => setPwCurrent(e.target.value)}
-                  placeholder="Current password"
+                  placeholder="Trenutno geslo"
                 />
                 <input
                   className="search"
                   type="password"
                   value={pwNew}
                   onChange={(e) => setPwNew(e.target.value)}
-                  placeholder="New password (min 6)"
+                  placeholder="Novo geslo (min 6)"
                 />
                 <input
                   className="search"
                   type="password"
                   value={pwConfirm}
                   onChange={(e) => setPwConfirm(e.target.value)}
-                  placeholder="Confirm new password"
+                  placeholder="Potrdi novo geslo"
                 />
                 <div style={{ display: "flex", gap: 8 }}>
                   <button className="tool" disabled={changingPw}>
-                    {changingPw ? "Changing…" : "Update password"}
+                    {changingPw ? "Spreminjam ..." : "Posodobi geslo"}
                   </button>
                 </div>
               </form>
@@ -481,14 +481,14 @@ const kartografiNumericStats = useMemo(() => {
 
             {/* Danger zone */}
             <section style={{ padding: 16, background: "#fff" }}>
-              <h3 style={{ margin: "0 0 8px", color: "#991b1b" }}>Danger zone</h3>
+              <h3 style={{ margin: "0 0 8px", color: "#991b1b" }}>Nevarno območje</h3>
               <button
                 className="tool"
                 style={{ borderColor: "#fecaca", background: "#fff1f2" }}
                 onClick={deleteAccount}
                 disabled={deleting}
               >
-                {deleting ? "Deleting…" : "Delete my account"}
+                {deleting ? "Brišem ..." : "Izbriši moj račun"}
               </button>
             </section>
           </div>

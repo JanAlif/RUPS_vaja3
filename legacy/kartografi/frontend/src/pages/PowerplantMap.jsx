@@ -15,12 +15,12 @@ const typeColors = {
 };
 
 const typeLabels = {
-  hydro: "Hydroelectric",
-  solar: "Solar",
-  wind: "Wind",
-  nuclear: "Nuclear",
-  coal: "Coal",
-  gas: "Gas"
+  hydro: "Hidroelektrarna",
+  solar: "Sončna",
+  wind: "Vetrna",
+  nuclear: "Jedrska",
+  coal: "Premog",
+  gas: "Plin"
 };
 
 function getColor(type) {
@@ -30,7 +30,7 @@ function getColor(type) {
 }
 
 function getTypeLabel(type) {
-  if (!type) return "Unknown";
+  if (!type) return "Neznano";
   const key = type.toLowerCase();
   return typeLabels[key] || type;
 }
@@ -125,12 +125,12 @@ function PowerplantMarker({ powerplant, color, zoom }) {
             {powerplant.name}
           </strong>
           <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
-            <div><strong>Type:</strong> {getTypeLabel(powerplant.type)}</div>
-            <div><strong>Capacity:</strong> {powerplant.mgw || powerplant.capacityMW || 'N/A'} MW</div>
+            <div><strong>Tip:</strong> {getTypeLabel(powerplant.type)}</div>
+            <div><strong>Moč:</strong> {powerplant.mgw || powerplant.capacityMW || 'Ni podatka'} MW</div>
             {powerplant.coolingNeeds && (
-              <div><strong>Cooling:</strong> {powerplant.coolingNeeds}</div>
+              <div><strong>Hlajenje:</strong> {powerplant.coolingNeeds}</div>
             )}
-            <div><strong>Status:</strong> {powerplant.isActive ? '🟢 Active' : '🔴 Inactive'}</div>
+            <div><strong>Status:</strong> {powerplant.isActive ? '🟢 Aktivna' : '🔴 Neaktivna'}</div>
           </div>
         </div>
       </Popup>
@@ -177,7 +177,7 @@ function FilterMenu({ onFilterChange, powerRange, visibleCount, totalCount, curr
               justify-content: space-between;
               align-items: center;
             ">
-              <span>Filters</span>
+              <span>Filtri</span>
               <button id="clear-filters" style="
                 background: #ef4444;
                 color: white;
@@ -187,7 +187,7 @@ function FilterMenu({ onFilterChange, powerRange, visibleCount, totalCount, curr
                 cursor: pointer;
                 font-size: 11px;
                 font-weight: 500;
-              ">Clear</button>
+              ">Počisti</button>
             </div>
             <div id="count-display" style="
               margin-bottom: 12px;
@@ -198,7 +198,7 @@ function FilterMenu({ onFilterChange, powerRange, visibleCount, totalCount, curr
               color: #374151;
               text-align: center;
             ">
-              Showing <strong>${visibleCount}</strong> of <strong>${totalCount}</strong> powerplants
+              Prikazujem <strong>${visibleCount}</strong> od <strong>${totalCount}</strong> elektrarn
             </div>
             
             <div style="margin-bottom: 16px;">
@@ -207,7 +207,7 @@ function FilterMenu({ onFilterChange, powerRange, visibleCount, totalCount, curr
                 margin-bottom: 8px;
                 font-size: 13px;
                 color: #374151;
-              ">Type</div>
+              ">Tip</div>
               ${Object.entries(typeColors).map(([type, color]) => `
                 <label style="
                   display: flex;
@@ -249,7 +249,7 @@ function FilterMenu({ onFilterChange, powerRange, visibleCount, totalCount, curr
                 margin-bottom: 8px;
                 font-size: 13px;
                 color: #374151;
-              ">Power Capacity (MW)</div>
+              ">Moč (MW)</div>
               <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
                 <input 
                   type="number" 
@@ -269,7 +269,7 @@ function FilterMenu({ onFilterChange, powerRange, visibleCount, totalCount, curr
                 <input 
                   type="number" 
                   id="max-power" 
-                  placeholder="Max" 
+                  placeholder="Maks" 
                   min="0"
                   value="${currentFilters.maxPower !== null ? currentFilters.maxPower : ''}"
                   style="
@@ -285,7 +285,7 @@ function FilterMenu({ onFilterChange, powerRange, visibleCount, totalCount, curr
                 font-size: 11px;
                 color: #6b7280;
                 margin-top: 4px;
-              ">Range: ${powerRange.min} - ${powerRange.max} MW</div>
+              ">Razpon: ${powerRange.min} - ${powerRange.max} MW</div>
             </div>
           </div>
         `;
@@ -346,7 +346,7 @@ function FilterMenu({ onFilterChange, powerRange, visibleCount, totalCount, curr
   // Update count display without recreating the control
   useEffect(() => {
     if (countDisplayRef.current) {
-      countDisplayRef.current.innerHTML = `Showing <strong>${visibleCount}</strong> of <strong>${totalCount}</strong> powerplants`;
+      countDisplayRef.current.innerHTML = `Prikazujem <strong>${visibleCount}</strong> od <strong>${totalCount}</strong> elektrarn`;
     }
   }, [visibleCount, totalCount]);
   
@@ -497,7 +497,7 @@ const PowerplantMap = () => {
         fontSize: "18px",
         color: "#6b7280"
       }}>
-        Loading powerplants...
+        Nalagam elektrarne ...
       </div>
     );
   }

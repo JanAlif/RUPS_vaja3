@@ -20,23 +20,23 @@ export default function NavBar() {
 
         <div className="nav-links">
           <NavLink to="/" end className={navLinkClass}>
-            Map
+            Zemljevid
           </NavLink>
           <NavLink to="/quiz" className={navLinkClass}>
-            Guess countries
+            Ugani države
           </NavLink>
           <NavLink to="/sloquiz" className={navLinkClass}>
-           Slo cities
+           Slovenska mesta
           </NavLink>
           <NavLink to="/leaderboards" className={navLinkClass}>
-            Leaderboards
+            Lestvice
           </NavLink>
           <NavLink to={"/quiz_geo_ele"} className={navLinkClass}>
-            🌍⚡ Geo-Ele Quiz
+            🌍⚡ Geo-Ele kviz
           </NavLink>
 
           <NavLink to="/powerplantmap" className={navLinkClass}>
-            Powerplant Map
+            Zemljevid elektrarn
           </NavLink>
 
           {/* ✅ Elektro modul (samo za prijavljene, ker je /elektro protected) */}
@@ -51,22 +51,22 @@ export default function NavBar() {
           {user ? (
             <>
               <span style={{ opacity: 0.9 }}>
-                hi, <strong>{user.username}</strong>
+                Živijo, <strong>{user.username}</strong>
               </span>
               <button className="btn btn-outline" onClick={logout}>
-                Logout
+                Odjava
               </button>
               <NavLink to="/profile" className={navLinkClass}>
-                Profile
+                Profil
               </NavLink>
             </>
           ) : (
             <>
               <Link className="btn btn-outline" to="/login">
-                Login
+                Prijava
               </Link>
               <Link className="btn btn-solid" to="/register">
-                Register
+                Registracija
               </Link>
             </>
           )}

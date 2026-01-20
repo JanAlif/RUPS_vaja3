@@ -19,7 +19,7 @@ function Protected({ children }) {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Nalagam ...</div>;
   }
   
   if (!user) return <Navigate to="/login" replace />;

@@ -18,7 +18,7 @@ export default function Home() {
   };
 
   const renderField = (val) => {
-    if (!val) return "N/A";
+    if (!val) return "Ni podatka";
     if (typeof val === "string") return <span dangerouslySetInnerHTML={{ __html: val }} />;
     if (Array.isArray(val)) return val.join(", ");
     if (typeof val === "object") {
@@ -63,8 +63,8 @@ export default function Home() {
   return (
     <div className="main-wrap">
       <div className="hero">
-        <h1>Explore the map</h1>
-        <p>Click anywhere to drop a marker. Countries are outlined & clickable.</p>
+        <h1>Razišči zemljevid</h1>
+        <p>Klikni kjerkoli, da dodaš označevalnik. Države so obrobljene in jih lahko klikneš.</p>
 
         {selectedCountryInfo && (
           <div
@@ -88,7 +88,7 @@ export default function Home() {
                   style={{ margin: "6px 0", cursor: "pointer" }}
                   onClick={() => toggleSection("background")}
                 >
-                  {expandedSections.background ? "▼" : "▶"} Background
+                  {expandedSections.background ? "▼" : "▶"} Ozadje
                 </h4>
                 {expandedSections.background && (
                   <p style={{ margin: "4px 0" }}>{renderField(selectedCountryInfo.background)}</p>
@@ -102,7 +102,7 @@ export default function Home() {
                     style={{ margin: "6px 0", cursor: "pointer" }}
                     onClick={() => toggleSection("geography")}
                   >
-                    {expandedSections.geography ? "▼" : "▶"} Geography
+                    {expandedSections.geography ? "▼" : "▶"} Geografija
                   </h4>
                   {expandedSections.geography && Object.entries(selectedCountryInfo.geography).map(([key, value]) => (
                     <div key={key} style={{ marginBottom: 6 }}>
@@ -119,7 +119,7 @@ export default function Home() {
                     style={{ margin: "6px 0", cursor: "pointer" }}
                     onClick={() => toggleSection("people")}
                   >
-                    {expandedSections.people ? "▼" : "▶"} People & Society
+                    {expandedSections.people ? "▼" : "▶"} Ljudje in družba
                   </h4>
                   {expandedSections.people && Object.entries(selectedCountryInfo.people).map(([key, value]) => (
                     <div key={key} style={{ marginBottom: 6 }}>
@@ -136,10 +136,10 @@ export default function Home() {
       <div className="map-card">
         <div className="map-toolbar">
           <span className="toolbar-title">Ljubljana</span>
-          <input className="search" placeholder="Search places (UI only)" />
+          <input className="search" placeholder="Poišči kraje (samo UI)" />
           <div className="toolbar-spacer" />
-          <button className="tool" onClick={() => mapRef.current?.recenter()}>Recenter</button>
-          <button className="tool" onClick={() => mapRef.current?.locate()}>My location</button>
+          <button className="tool" onClick={() => mapRef.current?.recenter()}>Ponastavi pogled</button>
+          <button className="tool" onClick={() => mapRef.current?.locate()}>Moja lokacija</button>
         </div>
 
         <div style={{ height: "75vh" }}>

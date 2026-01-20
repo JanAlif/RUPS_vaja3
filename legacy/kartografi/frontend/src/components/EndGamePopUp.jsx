@@ -26,15 +26,15 @@ export default function EndGameModal({ score, totalQuestions, onRestart, onExit,
           boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
         }}
       >
-        <h2 style={{ marginBottom: 16 }}>🎉 Quiz Complete!</h2>
+        <h2 style={{ marginBottom: 16 }}>🎉 Kviz zaključen!</h2>
         <p style={{ fontSize: "1.2rem", marginBottom: 24 }}>
-          You scored <strong>{score}</strong> out of {maxScore} points
+          Dosegel/dosegla si <strong>{score}</strong> od {maxScore} točk
         </p>
         <p style={{ fontSize: "1.1rem", color: "#6b7280", marginBottom: 20 }}>
-          {percentage}% correct
+          {percentage}% pravilno
         </p>
         {highScore && (
-          <p style={{ marginBottom: 20 }}>Your high score: 🏆 <strong>{highScore}</strong></p>
+          <p style={{ marginBottom: 20 }}>Tvoj najboljši rezultat: 🏆 <strong>{highScore}</strong></p>
         )}
         <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
           <button
@@ -50,7 +50,7 @@ export default function EndGameModal({ score, totalQuestions, onRestart, onExit,
               fontSize: "1rem",
             }}
           >
-            Play Again
+            Igraj znova
           </button>
           <button
             onClick={onExit}
@@ -65,7 +65,7 @@ export default function EndGameModal({ score, totalQuestions, onRestart, onExit,
               fontSize: "1rem",
             }}
           >
-            Exit
+            Izhod
           </button>
         </div>
       </div>

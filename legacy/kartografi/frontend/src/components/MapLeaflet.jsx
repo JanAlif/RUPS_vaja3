@@ -143,7 +143,7 @@ const MapLeaflet = forwardRef(function MapLeaflet(
   }
 
 
-  const background = traverseField(factbookData?.Introduction?.Background ?? "N/A");
+  const background = traverseField(factbookData?.Introduction?.Background ?? "Ni podatka");
 
   const geography = factbookData?.Geography ?? {};
   const geographyFields = {
@@ -201,7 +201,7 @@ const peopleFields = people ? {
   });
 }
 function traverseField(val) {
-  if (!val) return "N/A";
+  if (!val) return "Ni podatka";
 
   if (typeof val === "string") return val;
   if (Array.isArray(val)) return val.join(", ");

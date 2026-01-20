@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const CONTINENTS = [
-  { id: "all", name: "Open World" },
-  { id: "Africa", name: "Africa" },
-  { id: "Asia", name: "Asia" },
-  { id: "Europe", name: "Europe" },
-  { id: "North America", name: "North America" },
-  { id: "South America", name: "South America" },
-  { id: "Oceania", name: "Oceania" }
+  { id: "all", name: "Odprti svet" },
+  { id: "Africa", name: "Afrika" },
+  { id: "Asia", name: "Azija" },
+  { id: "Europe", name: "Evropa" },
+  { id: "North America", name: "Severna Amerika" },
+  { id: "South America", name: "Južna Amerika" },
+  { id: "Oceania", name: "Oceanija" }
 ];
 
 export default function Leaderboard() {
@@ -17,7 +17,7 @@ export default function Leaderboard() {
   const [selectedContinent, setSelectedContinent] = useState("all");
   const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5050";
 
-  const fetchLeaderboard = async (type, continent) => {
+  const fetchLeaderboard = useCallback(async (type, continent) => {
     setLoading(true);
     try {
       const baseUrl = apiBase.replace(/\/+$/, "");
@@ -40,15 +40,15 @@ export default function Leaderboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiBase]);
 
   useEffect(() => {
     fetchLeaderboard(gameType, selectedContinent);
-  }, [gameType, selectedContinent, apiBase]);
+  }, [gameType, selectedContinent, fetchLeaderboard]);
 
   if (loading) return (
     <div style={{ textAlign: "center", marginTop: 50, color: "#2d2a23" }}>
-      Loading leaderboard...
+      Nalagam lestvico ...
     </div>
   );
 
@@ -62,8 +62,8 @@ export default function Leaderboard() {
   return (
     <div className="main-wrap">
       <div className="hero" style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: "2rem", color: "#2d2a23" }}>🏆 Leaderboards</h1>
-        <p style={{ color: "#5d5b53" }}>Compete with players around the world</p>
+        <h1 style={{ fontSize: "2rem", color: "#2d2a23" }}>🏆 Lestvice</h1>
+        <p style={{ color: "#5d5b53" }}>Tekmuj z igralci po svetu</p>
       </div>
 
       <div className="map-card">
@@ -81,7 +81,7 @@ export default function Leaderboard() {
               transition: "0.2s all",
             }}
           >
-            Countries Quiz
+            Kviz držav
           </button>
           <button
             onClick={() => setGameType("slovenian-cities")}
@@ -96,7 +96,7 @@ export default function Leaderboard() {
               transition: "0.2s all",
             }}
           >
-            Slovenian Cities
+            Slovenska mesta
           </button>
 
           <button
@@ -112,12 +112,12 @@ export default function Leaderboard() {
               transition: "0.2s all",
             }}
           >
-            Geo-Ele Quiz
+            Geo-Ele kviz
           </button>
 
           {gameType === "countries" && (
             <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
-              <label style={{ fontWeight: 600, color: "#2d2a23" }}>Continent:</label>
+              <label style={{ fontWeight: 600, color: "#2d2a23" }}>Kontinent:</label>
               <select
                 value={selectedContinent}
                 onChange={(e) => setSelectedContinent(e.target.value)}
@@ -144,11 +144,11 @@ export default function Leaderboard() {
             <thead style={{ background: "linear-gradient(135deg, #2f6b4f, #1f456e)", color: "#fff" }}>
               <tr>
                 <th style={{ padding: "14px 12px", textAlign: "center", width: "60px" }}>#</th>
-                <th style={{ padding: "14px 12px", textAlign: "left" }}>Player</th>
-                <th style={{ padding: "14px 12px", textAlign: "center", width: "100px" }}>Score</th>
-                <th style={{ padding: "14px 12px", textAlign: "center", width: "100px" }}>Accuracy</th>
+                <th style={{ padding: "14px 12px", textAlign: "left" }}>Igralec</th>
+                <th style={{ padding: "14px 12px", textAlign: "center", width: "100px" }}>Rezultat</th>
+                <th style={{ padding: "14px 12px", textAlign: "center", width: "100px" }}>Natančnost</th>
                 {(gameType === "countries" || gameType === "geo-ele") && (
-                  <th style={{ padding: "14px 12px", textAlign: "center", width: "150px" }}>Continent</th>
+                  <th style={{ padding: "14px 12px", textAlign: "center", width: "150px" }}>Kontinent</th>
                 )}
               </tr>
             </thead>
@@ -159,7 +159,7 @@ export default function Leaderboard() {
                     colSpan={gameType === "countries" || gameType === "geo-ele" ? 5 : 4}
                     style={{ padding: "40px 20px", textAlign: "center", color: "#5d5b53" }}
                   >
-                    No scores yet. Be the first!
+                    Še ni rezultatov. Bodi prvi!
                   </td>
                 </tr>
               ) : (

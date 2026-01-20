@@ -13,20 +13,20 @@ function featureIso2(f) {
   return (f?.properties?.ISO_A2 || f?.properties?.iso_a2 || "").toUpperCase();
 }
 function featureName(f) {
-  return f?.properties?.NAME || f?.properties?.ADMIN || f?.properties?.name || "Unknown";
+  return f?.properties?.NAME || f?.properties?.ADMIN || f?.properties?.name || "Neznano";
 }
 function featureContinent(f) {
-  return f?.properties?.CONTINENT || "Unknown";
+  return f?.properties?.CONTINENT || "Neznano";
 }
 
 // --- constants ---
 const CONTINENTS = [
-  { id: "Africa", name: "Africa", emoji: "🌍" },
-  { id: "Asia", name: "Asia", emoji: "🌏" },
-  { id: "Europe", name: "Europe", emoji: "🇪🇺" },
-  { id: "North America", name: "North America", emoji: "🌎" },
-  { id: "South America", name: "South America", emoji: "🌎" },
-  { id: "Oceania", name: "Oceania", emoji: "🌏" },
+  { id: "Africa", name: "Afrika", emoji: "🌍" },
+  { id: "Asia", name: "Azija", emoji: "🌏" },
+  { id: "Europe", name: "Evropa", emoji: "🇪🇺" },
+  { id: "North America", name: "Severna Amerika", emoji: "🌎" },
+  { id: "South America", name: "Južna Amerika", emoji: "🌎" },
+  { id: "Oceania", name: "Oceanija", emoji: "🌏" },
 ];
 
 const TOTAL_QUESTIONS = 6;
@@ -101,6 +101,10 @@ export default function Quiz_Geo_Ele() {
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_LIMIT_SEC);
 
   const maxScore = SCORE_QUESTIONS * QUESTION_POINTS;
+  const selectedContinentName = useMemo(() => {
+    const found = CONTINENTS.find((c) => c.id === selectedContinent);
+    return found?.name || selectedContinent || "";
+  }, [selectedContinent]);
 
   const availableCountries = useMemo(() => {
     const list = (countriesGeo?.features || []).filter((f) => {
@@ -126,13 +130,13 @@ export default function Quiz_Geo_Ele() {
           setSelectedPowerplant(list[Math.floor(Math.random() * list.length)]);
         }
         if (list.length === 0) {
-          setError("No powerplant data available for this region.");
+          setError("Za to regijo ni podatkov o elektrarnah.");
         }
       })
       .catch(() => {
-        setError("Failed to load powerplant data.");
+        setError("Nalaganje podatkov o elektrarnah ni uspelo.");
       });
-  }, [selectedContinent]);
+  }, [selectedContinent, selectedPowerplant]);
 
   // --- timer tick ---
   useEffect(() => {
@@ -361,7 +365,7 @@ export default function Quiz_Geo_Ele() {
       }
     } catch (e) {
       setQuestion(null);
-      setError(e?.message || "Failed to load question.");
+      setError(e?.message || "Nalagam vprašanje ni uspelo.");
     } finally {
       setLoading(false);
     }
@@ -381,7 +385,7 @@ export default function Quiz_Geo_Ele() {
     // MCQ
     if (question.type === "mcq") {
       if (answer === "") {
-        setError("Select an option first.");
+        setError("Najprej izberi možnost.");
         return;
       }
 
@@ -417,7 +421,7 @@ export default function Quiz_Geo_Ele() {
     // MAP (Q4)
     if (question.type === "map") {
       if (!mapSelection) {
-        setError("Click a country on the map first.");
+        setError("Najprej klikni državo na zemljevidu.");
         return;
       }
 
@@ -592,9 +596,9 @@ export default function Quiz_Geo_Ele() {
             gap: 18,
           }}
         >
-          <h1 style={{ margin: 0 }}>🎓 Geo → Ele Challenge</h1>
+          <h1 style={{ margin: 0 }}>🎓 Geo → Ele izziv</h1>
           <p style={{ margin: 0, color: "#6b7280", lineHeight: 1.5 }}>
-            Run ima <strong>5 vprašanj</strong>:
+            Kviz ima <strong>5 vprašanj</strong>:
             <br />
             <strong>Q1–Q3</strong> = univerzitetna geografija (MCQ) · <strong>Q4</strong> = GeoGuess (map) ·{" "}
             <strong>Q5</strong> = država + energija (MCQ). <br />
@@ -603,7 +607,7 @@ export default function Quiz_Geo_Ele() {
 
           {!selectedContinent ? (
             <div>
-              <h2 style={{ fontSize: "1.2rem", margin: "16px 0 10px" }}>Choose a Continent:</h2>
+              <h2 style={{ fontSize: "1.2rem", margin: "16px 0 10px" }}>Izberi kontinent:</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
                 {CONTINENTS.map((c) => (
                   <button
@@ -642,7 +646,7 @@ export default function Quiz_Geo_Ele() {
                   cursor: "pointer",
                 }}
               >
-                ← Change continent
+                ← Zamenjaj kontinent
               </button>
 
               <button
@@ -657,7 +661,7 @@ export default function Quiz_Geo_Ele() {
                   fontWeight: 700,
                 }}
               >
-                Start 5-question run
+                Začni 5-vprašalni kviz
               </button>
             </div>
           )}
@@ -690,21 +694,21 @@ export default function Quiz_Geo_Ele() {
           >
             <div>
               <div style={{ fontSize: "0.95rem", color: "#6b7280" }}>
-                Continent: <strong>{selectedContinent}</strong>
+                Kontinent: <strong>{selectedContinentName}</strong>
               </div>
-              <h2 style={{ margin: "6px 0 0" }}>Question {progressLabel}</h2>
+              <h2 style={{ margin: "6px 0 0" }}>Vprašanje {progressLabel}</h2>
             </div>
 
             <div style={{ textAlign: "right" }}>
               <div>
-                Score: <strong>{score}</strong>
+                Rezultat: <strong>{score}</strong>
               </div>
               <div style={{ color: "#6b7280", fontSize: "0.95rem" }}>Max(base): {maxScore}</div>
 
               {/* timer HUD */}
               {question && !result && (
                 <div style={{ marginTop: 8, fontSize: "0.95rem" }}>
-                  ⏱️ <strong>{timeLeft}s</strong> · if correct now: <strong>{previewGain}</strong> pts
+                  ⏱️ <strong>{timeLeft}s</strong> · če je zdaj pravilno: <strong>{previewGain}</strong> točk
                 </div>
               )}
             </div>
@@ -722,7 +726,7 @@ export default function Quiz_Geo_Ele() {
             {error && <div style={{ color: "#dc2626", fontWeight: 600, marginBottom: 10 }}>{error}</div>}
 
             {!question ? (
-              <div>{loading ? "Loading…" : "No question available."}</div>
+              <div>{loading ? "Nalagam ..." : "Vprašanje ni na voljo."}</div>
             ) : (
               <>
                 <h3 style={{ marginTop: 0 }}>{question.prompt}</h3>
@@ -731,12 +735,12 @@ export default function Quiz_Geo_Ele() {
                   <div style={{ marginTop: 8, color: "#6b7280", fontSize: "0.95rem" }}>
                     {question.meta?.category ? (
                       <>
-                        Category: <strong>{question.meta.category}</strong> ·{" "}
+                        Kategorija: <strong>{question.meta.category}</strong> ·{" "}
                       </>
                     ) : null}
                     {question.meta?.difficulty != null ? (
                       <>
-                        Difficulty: <strong>{question.meta.difficulty}</strong>
+                        Težavnost: <strong>{question.meta.difficulty}</strong>
                       </>
                     ) : null}
                   </div>
@@ -823,17 +827,17 @@ export default function Quiz_Geo_Ele() {
                         <strong>
                           {Array.isArray(question.meta?.powerplant?.constraints) && question.meta.powerplant.constraints.length
                             ? question.meta.powerplant.constraints.join(", ")
-                            : "none"}
+                            : "brez"}
                         </strong>
                       </div>
                       <div style={{ marginTop: 12, display: "flex", gap: 12, alignItems: "center" }}>
                         <img
                           src={question.data?.placeholderImg}
-                          alt="Powerplant placeholder"
+                          alt="Nadomestna slika elektrarne"
                           style={{ width: 64, height: 64 }}
                         />
                         <div style={{ color: "#6b7280", fontSize: "0.95rem" }}>
-                          Odpri Elektro in sestavi krog, ki ustreza tej elektrarni. Nato se vrni in klikni Submit.
+                          Odpri Elektro in sestavi krog, ki ustreza tej elektrarni. Nato se vrni in klikni Oddaj.
                         </div>
                       </div>
                       <div style={{ marginTop: 12 }}>
@@ -850,7 +854,7 @@ export default function Quiz_Geo_Ele() {
                             cursor: "pointer",
                           }}
                         >
-                          Open Workspace
+                          Odpri delovno okolje
                         </button>
                       </div>
                     </>
@@ -875,7 +879,7 @@ export default function Quiz_Geo_Ele() {
                         fontWeight: 700,
                       }}
                     >
-                      {loading ? "Checking…" : "Submit"}
+                      {loading ? "Preverjam ..." : "Oddaj"}
                     </button>
 
                     <button
@@ -889,7 +893,7 @@ export default function Quiz_Geo_Ele() {
                         cursor: "pointer",
                       }}
                     >
-                      Exit
+                      Izhod
                     </button>
 
                     {question.type === "map" && (
@@ -904,7 +908,7 @@ export default function Quiz_Geo_Ele() {
                           cursor: "pointer",
                         }}
                       >
-                        Recenter
+                        Ponastavi pogled
                       </button>
                     )}
                   </div>
@@ -925,15 +929,15 @@ export default function Quiz_Geo_Ele() {
                     }}
                   >
                     <div style={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                      {result.correct ? "✅ Correct" : "❌ Incorrect"}
+                      {result.correct ? "✅ Pravilno" : "❌ Napačno"}
                     </div>
 
                     <div style={{ marginTop: 6, fontSize: "0.95rem" }}>
-                      ⏱️ Time: <strong>{result.info?.elapsedSec}s</strong>
+                      ⏱️ Čas: <strong>{result.info?.elapsedSec}s</strong>
                       {result.correct ? (
                         <>
                           {" "}
-                          · Points gained: <strong>{result.info?.gained}</strong>
+                          · Pridobljene točke: <strong>{result.info?.gained}</strong>
                         </>
                       ) : null}
                     </div>
@@ -953,14 +957,14 @@ export default function Quiz_Geo_Ele() {
                       <div style={{ marginTop: 6 }}>
                         {!result.correct ? (
                           <>
-                            Correct answer: <strong>{result.info?.correctLabel}</strong>
+                            Pravilen odgovor: <strong>{result.info?.correctLabel}</strong>
                           </>
                         ) : (
-                          <>Good.</>
+                          <>Dobro.</>
                         )}
                         {result.info?.explanation ? (
                           <div style={{ marginTop: 8, color: "#111827" }}>
-                            <strong>Explanation:</strong> {result.info.explanation}
+                            <strong>Razlaga:</strong> {result.info.explanation}
                           </div>
                         ) : null}
                       </div>
@@ -1015,7 +1019,7 @@ export default function Quiz_Geo_Ele() {
                         fontWeight: 700,
                       }}
                     >
-                      {questionNumber >= TOTAL_QUESTIONS ? "Finish run" : "Next"}
+                      {questionNumber >= TOTAL_QUESTIONS ? "Zaključi kviz" : "Naprej"}
                     </button>
                   </div>
                 )}
