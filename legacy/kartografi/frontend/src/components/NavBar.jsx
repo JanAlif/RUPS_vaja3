@@ -39,12 +39,6 @@ export default function NavBar() {
             Zemljevid elektrarn
           </NavLink>
 
-          {/* ✅ Elektro modul (samo za prijavljene, ker je /elektro protected) */}
-          {user && (
-            <NavLink to="/elektro" className={navLinkClass}>
-              ⚡ Elektro
-            </NavLink>
-          )}
         </div>
 
         <div className="nav-right">

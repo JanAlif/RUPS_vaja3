@@ -523,6 +523,139 @@ export default function Quiz_Geo_Ele() {
     await loadQuestion(questionNumber + 1);
   }
 
+  useEffect(() => {
+
+    const savedStateStr = localStorage.getItem("geoEleState");
+
+    const workspaceScoreStr = localStorage.getItem("geoEleScore");
+
+
+
+    if (savedStateStr && workspaceScoreStr) {
+
+      try {
+
+        const saved = JSON.parse(savedStateStr);
+
+        const wsData = JSON.parse(workspaceScoreStr);
+
+
+
+        // Restore context
+
+        setGameState(saved.gameState || "playing");
+
+        setQuestionNumber(saved.questionNumber || 6);
+
+        setSelectedContinent(saved.selectedContinent);
+
+        setSelectedPowerplant(saved.selectedPowerplant);
+
+        setBridgeQ4(saved.bridgeQ4);
+
+        setBridgeQ5(saved.bridgeQ5);
+
+
+
+        // Calculate score
+
+        const gained = wsData.score || 0;
+
+        const isCorrect = gained > 0;
+
+
+
+        // Apply total score directly
+
+        setScore((saved.score || 0) + gained);
+
+
+
+        // Restore Q6 UI so result can be shown
+
+        const picked = saved.selectedPowerplant;
+
+        setQuestion({
+
+          type: "build",
+
+          prompt: `Q6 (Build): Zgradi električni krog za elektrarno "${
+
+            picked?.name || "Unknown"
+
+          }".`,
+
+          data: { placeholderImg: powerplantPlaceholder },
+
+          meta: {
+
+            powerplant: picked
+
+              ? {
+
+                  region: saved.selectedContinent,
+
+                  name: picked.name,
+
+                  type: picked.type,
+
+                  coolingNeeds: picked.coolingNeeds,
+
+                  capacityMW: picked.capacityMW,
+
+                  constraints: picked.constraints || [],
+
+                  meta: picked.meta || {},
+
+                }
+
+              : {},
+
+          },
+
+        });
+
+
+
+        // Show result
+
+        setResult({
+
+          correct: isCorrect,
+
+          info: {
+
+            correctLabel: "Workspace Task",
+
+            explanation: wsData.message || "Circuit submitted.",
+
+
+            elapsedSec: 0,
+
+            gained: gained,
+
+          },
+
+        });
+
+
+
+        // Cleanup
+
+        localStorage.removeItem("geoEleState");
+
+        localStorage.removeItem("geoEleScore");
+
+      } catch (e) {
+
+        console.error("Failed to restore geoEleState", e);
+
+      }
+
+    }
+
+  }, []);
+
   function finish() {
     // Submit to leaderboard (best score) – mirror pattern from Quiz.jsx
     try {

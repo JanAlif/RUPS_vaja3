@@ -19,6 +19,27 @@ const OUTSIDE_GRID_RESULT_KEY = "geoEleBuildResult";
 const INSIDE_GRID_RESULT_KEY = "geoEleInsideResult";
 export const CITY_DEMAND_MW = 500;
 const DEFAULT_WORKSPACE_KEY = "workspaceComponents";
+export const COMPONENT_BASE_SIZE = 100;
+export const COMPONENT_SIZES = {
+  baterija: 100,
+  upor: 100,
+  svetilka: 100,
+  "stikalo-on": 100,
+  "stikalo-off": 100,
+  zica: 100,
+  ampermeter: 100,
+  voltmeter: 100,
+  elektrarna: 100,
+  mesto: 85,
+  "vodna-crpalka": 70,
+  transformator: 70,
+  "uranium-core": 75,
+  "water-tube": 81,
+  turbine: 70,
+};
+export const COMPONENT_OFFSETS = {
+  "water-tube": { x: 0, y: -12 }, // Example: offsets water-tube vertically
+};
 
 /**
  * Pobriše vse podatke o igranju za WorkspaceScene iz localStorage.
@@ -87,7 +108,7 @@ export function loadChallengesFromApi(scene) {
     })
     .then((challenges) => {
       if (!Array.isArray(challenges) || challenges.length === 0) {
-        scene.promptText.setText("Ni definiranih izzivov.");
+        // scene.promptText.setText("Ni definiranih izzivov.");
         return;
       }
 
@@ -99,11 +120,11 @@ export function loadChallengesFromApi(scene) {
       }
 
       const current = scene.challenges[scene.currentChallengeIndex];
-      scene.promptText.setText(current.prompt);
+      // scene.promptText.setText(current.prompt); // Disabled challenge prompt display
     })
     .catch((err) => {
       console.error(err);
-      scene.promptText.setText("Napaka pri nalaganju izzivov.");
+      // scene.promptText.setText("Napaka pri nalaganju izzivov.");
     });
 }
 
@@ -211,7 +232,14 @@ function placeComponentAtPosition(scene, x, y, type, color) {
   const displayName = getDisplayName(scene, type);
 
   const ui = getUiScale(scene.scale);
-  const IMAGE_SIZE = 100 * ui;
+  // LOOKUP SPECIFIC SIZE OR FALLBACK
+  const baseSize = COMPONENT_SIZES[type] || COMPONENT_BASE_SIZE;
+  const IMAGE_SIZE = baseSize * ui;
+  
+  // LOOKUP SPECIFIC OFFSET
+  const offset = COMPONENT_OFFSETS[type] || { x: 0, y: 0 };
+  const offsetX = offset.x * ui;
+  const offsetY = offset.y * ui;
 
   const newComponent = scene.add.container(x, y);
 
@@ -358,8 +386,17 @@ function placeComponentAtPosition(scene, x, y, type, color) {
 
     case "water-tube":
       id = "tube_" + getRandomInt(1000, 9999);
-      componentImage = scene.add.image(0, 0, "water-tube").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
-      newComponent.add(componentImage);
+      if (offsetX !== 0 || offsetY !== 0) {
+        // Create an inner container for rotation so the image orbits the center
+        const innerContainer = scene.add.container(0, 0);
+        componentImage = scene.add.image(offsetX, offsetY, "water-tube").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+        innerContainer.add(componentImage);
+        newComponent.add(innerContainer);
+        newComponent.setData("rotatableContainer", innerContainer);
+      } else {
+        componentImage = scene.add.image(0, 0, "water-tube").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+        newComponent.add(componentImage);
+      }
       break;
 
     case "turbine":
@@ -700,7 +737,16 @@ export function createComponent(scene, x, y, type, color, ui) {
   const displayName = getDisplayName(scene, type);
 
   const component = scene.add.container(x, y);
-  const IMAGE_SIZE = 100 * ui;
+  
+  // LOOKUP SPECIFIC SIZE OR FALLBACK
+  const baseSize = COMPONENT_SIZES[type] || COMPONENT_BASE_SIZE;
+  const IMAGE_SIZE = baseSize * ui;
+
+  // LOOKUP SPECIFIC OFFSET
+  const offset = COMPONENT_OFFSETS[type] || { x: 0, y: 0 };
+  const offsetX = offset.x * ui;
+  const offsetY = offset.y * ui;
+
   let comp = null;
   let componentImage;
   let id;
@@ -853,8 +899,17 @@ export function createComponent(scene, x, y, type, color, ui) {
       break;
 
     case "water-tube":
-      componentImage = scene.add.image(0, 0, "water-tube").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
-      component.add(componentImage);
+      if (offsetX !== 0 || offsetY !== 0) {
+        // Create an inner container for rotation so the image orbits the center
+        const innerContainer = scene.add.container(0, 0);
+        componentImage = scene.add.image(offsetX, offsetY, "water-tube").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+        innerContainer.add(componentImage);
+        component.add(innerContainer);
+        component.setData("rotatableContainer", innerContainer);
+      } else {
+        componentImage = scene.add.image(0, 0, "water-tube").setOrigin(0.5).setDisplaySize(IMAGE_SIZE, IMAGE_SIZE);
+        component.add(componentImage);
+      }
       component.setData("logicComponent", null);
       break;
 
@@ -1439,10 +1494,6 @@ export function evaluateOutsideGrid(scene) {
   }
 
   const requirements = evaluateGridRequirements(powerplant, placedTypes);
-  const cityInfo = getConnectedCityInfo(scene, powerplant);
-  if (cityInfo.requiredCities && !cityInfo.capacityMatch) {
-    requirements.missing.push(`mesto(${cityInfo.requiredCities}x)`);
-  }
 
   let insideResult = null;
   try {
@@ -1461,23 +1512,63 @@ export function evaluateOutsideGrid(scene) {
 
   // 1. Power Generation (Max 70%)
   // Logic: 90% - 110% of requirememt AND reactor must be stable
-  if (insideStable && insideOutput >= 0.9 * capacityMW && insideOutput <= 1.1 * capacityMW) {
-    score += 70;
+  if (insideStable) {
+    if(insideOutput >= 0.9 * capacityMW && insideOutput <= 1.1 * capacityMW){
+      score += 70;
+    }
+    else if (insideOutput >= 0.8 * capacityMW && insideOutput < 1.2 * capacityMW){
+      score += 50;
+    }
+    else if (insideOutput >= 0.6 * capacityMW && insideOutput < 1.4 * capacityMW){
+      score += 30;
+    }
+    else if (insideOutput > 0){
+      score += 10;
+    }
   }
 
   // 2. City Consumption (Max 30%)
-  // Logic: Connected Cities demand (0.9-1.1 of produced)
-  // Each city needs ~500MW (CITY_DEMAND_MW)
-  const totalDemand = cityInfo.connectedCities * CITY_DEMAND_MW;
+  // Logic: Cities on grid demand (0.9-1.1 of produced)
+  // Each city needs ~500MW (CITY_DEMAND _MW)
+  console.log(placedTypes)
+  
+  const totalCitiesOnGrid = placedTypes.filter((t) => t === "mesto").length;
+  const totalTransformersOnGrid = placedTypes.filter(
+    (t) => t === "transformator"
+  ).length;
+
+  const totalDemand = totalCitiesOnGrid * CITY_DEMAND_MW;
+
+  // Compatibility object for Quiz result
+  const cityInfo = {
+    connectedCities: totalCitiesOnGrid,
+    requiredCities: Math.round(capacityMW / CITY_DEMAND_MW),
+    capacityMatch: totalDemand >= 0.9 * capacityMW && totalDemand <= 1.1 * capacityMW,
+    connectedTransformers: totalTransformersOnGrid // for completeness
+  };
+
+  console.log("Total Demand (all cities):", totalDemand, "CapacityMW:", capacityMW);
   
   // They get points if demand matches supply (which matches capacity)
   if (totalDemand >= 0.9 * capacityMW && totalDemand <= 1.1 * capacityMW) {
+    console.log("Calculating consumption points...");
     // Initial 30 points
     let consumptionPoints = 30;
 
     // Deduct if transformers are missing.
     // Logic: Each city needs a transformer.
-    // If connectedTransformers < connectedCities, deduct proportional points.
+    // We check total transformers vs total cities on grid now
+    console.log("Deducting points for missing transformers...");
+    if (totalCitiesOnGrid > 0) {
+       console.log(totalTransformersOnGrid, totalCitiesOnGrid);
+       const ratio = totalTransformersOnGrid / totalCitiesOnGrid;
+       consumptionPoints = consumptionPoints * ratio;
+    } else {
+       consumptionPoints = 0;
+    }
+    
+    /* 
+    // Old connected logic
     if (cityInfo.connectedTransformers < cityInfo.connectedCities) {
       if (cityInfo.connectedCities > 0) {
         const ratio = cityInfo.connectedTransformers / cityInfo.connectedCities;
@@ -1486,7 +1577,9 @@ export function evaluateOutsideGrid(scene) {
         consumptionPoints = 0;
       }
     }
+    */
     score += consumptionPoints;
+    console.log("score", score);
   }
 
   const correct = requirements.missing.length === 0;

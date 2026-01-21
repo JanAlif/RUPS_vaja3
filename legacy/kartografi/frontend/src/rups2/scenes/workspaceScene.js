@@ -40,6 +40,12 @@ export default class WorkspaceScene extends Phaser.Scene {
       stable: true,
       message: "",
     };
+
+    // Example overlay configuration (editable)
+    this.exampleConfig = {
+      outside: { x: 797, y: 458, width: 842, height: 604 }, // null = auto center
+      inside: { x: 821, y: 436, width: 802, height: 565 }
+    };
   }
 
   preload() {
@@ -70,6 +76,10 @@ export default class WorkspaceScene extends Phaser.Scene {
     // Keep placeholder keys if needed to prevent crashes, but menus will use new types
     this.load.image("ampermeter", asset("../components/ammeter.png"));
     this.load.image("voltmeter", asset("../components/voltmeter.png"));
+
+    // Load example overlay images
+    this.load.image("example-outside", asset("../components/outside.png"));
+    this.load.image("example-inside", asset("../components/inside2.png"));
   }
 
   create() {
@@ -155,7 +165,7 @@ export default class WorkspaceScene extends Phaser.Scene {
 
     // text za izzive + feedback
     this.promptText = this.add
-      .text(Math.floor(width / 1.8), Math.floor(height - 30), "Nalagam izzive...", {
+      .text(Math.floor(width / 1.8), Math.floor(height - 30), "", {
         fontSize: `${Math.round(20 * ui)}px`,
         color: "#0f172a",
         fontStyle: "bold",
@@ -210,24 +220,20 @@ export default class WorkspaceScene extends Phaser.Scene {
       return { bg, text };
     };
 
-    makeButton(width - 140, 60 + 15 * ui, "Lestvica", () =>
-      this.scene.start("ScoreboardScene", {
-        cameFromMenu: false,
-        previousScene: "WorkspaceScene",
-      })
-    );
-    makeButton(width - 140, 120 + 15 * ui, "Preveri krog", () => checkCircuit(this));
-    makeButton(width - 140, 180 + 15 * ui, "Simulacija", () => simulateCircuit(this));
-    makeButton(width - 140, 240 + 15 * ui, "Počisti mizo", () => clearWorkspace(this));
-    makeButton(width - 140, 300 + 15 * ui, "Oddaj omrežje", () => {
+    makeButton(width - 140, 60 + 15 * ui, "Počisti mizo", () => clearWorkspace(this));
+    makeButton(width - 140, 120 + 15 * ui, "Oddaj omrežje", () => {
       const result = evaluateOutsideGrid(this);
-      if (this.checkText) {
-        this.checkText.setStyle({ color: result.correct ? "#00aa00" : "#cc0000" });
-        this.checkText.setText(result.message || "Oddaja ni uspela.");
-      }
+      
+      // Store result in localStorage so Quiz_Geo_Ele can read it
+      localStorage.setItem("geoEleScore", JSON.stringify({
+        score: Math.round(result.score || 0),
+        message: result.message
+      }));
+      
+      // Redirect back to Quiz_Geo_Ele (which mimics "Home" or "Quiz" logic)
+      // Since WorkspaceScene is launched via "this.scene.start", we can do:
+      window.location.href = "/quiz_geo_ele"; 
     });
-
-    this.toggleExampleBtn = makeButton(width - 140, 360 + 15 * ui, "Prikaži primer", () => toggleExampleMode(this));
 
     // stranska vrstica
     const panelWidth = Math.max(160 * ui, width * 0.12);
@@ -249,7 +255,7 @@ export default class WorkspaceScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // komponente v stranski vrstici (kličeš logični helper)
-    const listTop = 160 * ui;
+    const listTop = 150 * ui;
     const listBottom = height - 20 * ui;
     const listViewHeight = listBottom - listTop;
     this.componentListTop = listTop;
@@ -520,10 +526,18 @@ export default class WorkspaceScene extends Phaser.Scene {
     this.isExampleMode = enabled;
     this.updateExampleTabs();
     if (this.componentList) this.componentList.setVisible(!enabled);
-    if (this.exampleContainer) this.exampleContainer.setVisible(enabled);
-    if (this.checkText && enabled) {
-      this.checkText.setStyle({ color: "#0f172a" });
-      this.checkText.setText("Primer: prikaz pravilnega zunanjega + notranjega kroga.");
+    
+    // Refresh or hide the example overlay
+    if (enabled) {
+      this.buildExampleCircuits(); // Re-build/update overlay based on current mode
+      if (this.exampleContainer) this.exampleContainer.setVisible(true);
+      if (this.checkText) {
+        this.checkText.setStyle({ color: "#0f172a" });
+        this.checkText.setText("Primer: " + (this.mode === "inside" ? "notranji" : "zunanji") + " krog. Elektrarna: 1500MW");
+      }
+    } else {
+      if (this.exampleContainer) this.exampleContainer.setVisible(false);
+      if (this.checkText) this.checkText.setText("");
     }
   }
 
@@ -559,59 +573,26 @@ export default class WorkspaceScene extends Phaser.Scene {
     const { width, height } = this.cameras.main;
     if (this.exampleContainer) this.exampleContainer.destroy(true);
 
-    const centerX = width / 2 + 60 * ui;
-    const centerY = height / 2;
     const container = this.add.container(0, 0);
-    container.setDepth(4);
+    container.setDepth(100); // High depth to cover workspace
 
-    const makeStaticItem = (x, y, texture, label, enablePlant = false) => {
-      const item = this.add.container(x, y);
-      const img = this.add.image(0, 0, texture).setDisplaySize(70 * ui, 70 * ui);
-      const text = this.add
-        .text(0, 50 * ui, label, {
-          fontSize: `${Math.round(12 * ui)}px`,
-          color: "#111827",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5);
-      item.add([img, text]);
-      if (enablePlant) {
-        img.setInteractive({ useHandCursor: true });
-        img.on("pointerdown", (pointer) => {
-          if (!pointer?.rightButtonDown()) return;
-          this.enterInsidePlantMode();
-        });
-      }
-      return item;
-    };
+    // Determine which image to show based on mode
+    const key = this.mode === "inside" ? "example-inside" : "example-outside";
+    const config = this.mode === "inside" ? this.exampleConfig.inside : this.exampleConfig.outside;
 
-    const plantName = this.selectedPowerplant?.name || "Elektrarna";
-    const outsideGroup = this.add.container(centerX - 180 * ui, centerY);
-    outsideGroup.add(makeStaticItem(0, -60 * ui, "baterija", `Elektrarna: ${plantName}`, true));
-    outsideGroup.add(makeStaticItem(120 * ui, -60 * ui, "zica", "Žica"));
-    outsideGroup.add(makeStaticItem(220 * ui, -60 * ui, "svetilka", "Mesto (porabnik)"));
-    outsideGroup.add(makeStaticItem(0, 60 * ui, "voltmeter", "Vodna črpalka"));
-    outsideGroup.add(makeStaticItem(120 * ui, 60 * ui, "upor", "Transformator"));
+    // Use configured position or center default
+    const x = config.x !== null ? config.x : width / 2;
+    const y = config.y !== null ? config.y : height / 2;
 
-    const insideGroup = this.add.container(centerX + 180 * ui, centerY);
-    insideGroup.add(makeStaticItem(0, -80 * ui, "baterija", "Uranovo jedro"));
-    insideGroup.add(makeStaticItem(120 * ui, -80 * ui, "zica", "Vodna cev"));
-    insideGroup.add(makeStaticItem(240 * ui, -80 * ui, "svetilka", "Turbina"));
-    insideGroup.add(makeStaticItem(0, 0, "voltmeter", "Hladilna voda"));
-    insideGroup.add(makeStaticItem(120 * ui, 0, "ampermeter", "Generator"));
-    insideGroup.add(makeStaticItem(240 * ui, 0, "upor", "Krmilne palice"));
+    const img = this.add.image(x, y, key);
+    
+    // Scale image
+    const w = (config.width || 800) * ui;
+    const h = (config.height || 600) * ui;
+    img.setDisplaySize(w, h);
 
-    const label = this.add
-      .text(centerX, centerY - 150 * ui, "Primer delujočega kroga (zunanji + notranji)", {
-        fontSize: `${Math.round(14 * ui)}px`,
-        color: "#0f172a",
-        backgroundColor: "#ffffffcc",
-        padding: { x: 10, y: 6 },
-      })
-      .setOrigin(0.5);
-
-    container.add([outsideGroup, insideGroup, label]);
-    container.setVisible(false);
+    container.add(img);
+    container.setVisible(this.isExampleMode);
     this.exampleContainer = container;
   }
 
@@ -663,7 +644,8 @@ export default class WorkspaceScene extends Phaser.Scene {
       return;
     }
 
-    const coolingRatio = water / Math.max(1, uranium * 2);
+    const WATER_PER_URANIUM = 1; // Change this value to adjust required water per uranium (currently 2 water per 1 uranium)
+    const coolingRatio = water / Math.max(1, uranium * WATER_PER_URANIUM);
     const stable = coolingRatio >= 1 && water > 0;
     this.insideState.stable = stable;
 
@@ -675,10 +657,19 @@ export default class WorkspaceScene extends Phaser.Scene {
       return;
     }
 
-    const base = uranium * 120;
-    const turbineBoost = turbines * 40;
-    const tubeBoost = tubes * 10;
-    this.insideState.outputMW = Math.round((base + turbineBoost + tubeBoost) * 0.6);
+    const THERMAL_PER_URANIUM = 600; // MWth per uranium rod
+    const EFFICIENCY = 0.33;        // thermal → electric
+    const POWER_PER_TURBINE = 350;  // MWe per turbine
+
+    const reactorElectric =
+      uranium * THERMAL_PER_URANIUM * EFFICIENCY;
+
+    const turbineLimit =
+      turbines * POWER_PER_TURBINE;
+
+    this.insideState.outputMW = Math.round(
+      Math.min(reactorElectric, turbineLimit)
+    );
     this.insideState.message = "";
     this.updateInsideStatsUI();
     this.saveInsideResult();
@@ -738,14 +729,14 @@ export default class WorkspaceScene extends Phaser.Scene {
 
     const baseX = -panelWidth / 2 + 60 * ui;
     const baseY = panelHeight / 2 - 30 * ui;
-    const gap = 60 * ui;
+    const gap = 90 * ui;
 
     const uraniumMinus = makeAdjustButton("-U", baseX, baseY, () => {
       this.insideState.uraniumAmount = Math.max(0, this.insideState.uraniumAmount - 1);
       this.computeInsideOutput();
     });
     const uraniumPlus = makeAdjustButton("+U", baseX + 40 * ui, baseY, () => {
-      this.insideState.uraniumAmount = Math.min(10, this.insideState.uraniumAmount + 1);
+      this.insideState.uraniumAmount = Math.min(50, this.insideState.uraniumAmount + 1);
       this.computeInsideOutput();
     });
 
@@ -780,7 +771,7 @@ export default class WorkspaceScene extends Phaser.Scene {
 
     const ui = getUiScale(this.scale);
     const componentGap = 80 * ui;
-    const componentStartY = this.componentListTop + 20 * ui;
+    const componentStartY = this.componentListTop + 60 * ui;
 
     items.forEach((item, index) => {
       const y = componentStartY + componentGap * index;
@@ -819,7 +810,7 @@ export default class WorkspaceScene extends Phaser.Scene {
     this.setModeLabel();
 
     const pumps = this.getOutsidePumpCount();
-    this.insideState.waterAvailable = pumps * 3;
+    this.insideState.waterAvailable = pumps * 4;
     this.insideState.waterAmount = Math.min(this.insideState.waterAmount, this.insideState.waterAvailable);
 
     this.outsidePromptText = this.promptText.text;
@@ -840,10 +831,20 @@ export default class WorkspaceScene extends Phaser.Scene {
       { type: "turbine", color: 0xffcc80 },
       { type: "zica", color: 0x0066cc },
     ]);
+
+    // If we're in example mode, we need to refresh the overlay because the mode changed
+    if (this.isExampleMode) {
+      this.buildExampleCircuits();
+    }
   }
 
   exitInsidePlantMode() {
-    this.promptText.setText(this.outsidePromptText || "Nalagam izzive...");
+    saveWorkspaceState(this);
+    
+    this.mode = "outside";
+    this.workspaceStorageKey = this.isExampleMode ? "exampleComponentsOutside" : "workspaceComponentsOutside";
+    this.setModeLabel();
+
     if (this.insidePanel) {
       this.insidePanel.destroy(true);
       this.insidePanel = null;
@@ -860,6 +861,11 @@ export default class WorkspaceScene extends Phaser.Scene {
       { type: "transformator", color: 0xffcc80 },
       { type: "zica", color: 0x0066cc },
     ]);
+
+    // If we're in example mode, we need to refresh the overlay because the mode changed
+    if (this.isExampleMode) {
+      this.buildExampleCircuits();
+    }
   }
 
   toggleWorkspaceMode() {
